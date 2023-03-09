@@ -40,6 +40,7 @@ make -j4
 
 Build as follows:
 ```bash
+mkdir build
 cd build
 cmake ..
 make
