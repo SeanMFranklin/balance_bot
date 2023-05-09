@@ -20,6 +20,7 @@ enum message_topics{
     MBOT_MOTOR_PWM_CMD = 230,
     MBOT_MOTOR_VEL_CMD = 231,
     MBOT_MOTOR_VEL = 232,
+    MBOT_MOTOR_PWM = 233
 };
 
 #endif

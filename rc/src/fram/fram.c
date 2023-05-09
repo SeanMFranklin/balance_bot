@@ -1,3 +1,12 @@
+/**
+ *
+ * @brief Functions to use the FRAM
+ *
+ * @author pgaskell
+ * @date 2022
+ * 
+ */
+
 #include <rc/fram/fram.h>
 
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
@@ -7,15 +16,6 @@ int __i2c_fram_write_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_
 int __i2c_fram_write_word(i2c_inst_t* i2c, uint16_t addr, uint16_t data);
 int __i2c_fram_write_byte(i2c_inst_t* i2c, uint16_t addr, uint8_t data);
 
-/**
- * @brief Read bytes from a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address from which to read
- * @param length The number of bytes to read
- * @param data Pointer to store the read data
- * @return int Number of bytes read, or -1 if an error occurred
- */
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
 {
     uint8_t upper_addr_bit = (uint8_t)((addr & 0x100)>>8);
@@ -31,28 +31,12 @@ int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t
 	return bytes_read;
 }
 
-/**
- * @brief Read a word from a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address from which to read
- * @param data Pointer to store the read data
- * @return int Number of bytes read, or -1 if an error occurred
- */
 int __i2c_fram_read_byte(i2c_inst_t* i2c, uint16_t addr, uint8_t* data)
 {
 	int num_bytes_read = __i2c_fram_read_bytes(i2c, addr, 1, data);
 	return num_bytes_read;
 }
 
-/**
- * @brief Read a byte from a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address from which to read
- * @param data Pointer to store the read data
- * @return int Number of bytes read, or -1 if an error occurred
- */
 int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
 {
 	uint8_t buf[2];
@@ -61,15 +45,6 @@ int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
 	return num_bytes_read;
 }
 
-/**
- * @brief Write bytes to a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address to which to write
- * @param length The number of bytes to write
- * @param data Pointer to the data to write
- * @return int 0 if successful, or -1 if an error occurred
- */
 int __i2c_fram_write_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data){
     uint8_t upper_addr_bit = (uint8_t)((addr & 0x100)>>8);
 	uint8_t writeData[length+1];
@@ -81,14 +56,6 @@ int __i2c_fram_write_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_
 	return 0;
 }
 
-/**
- * @brief Write a byte to a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address to which to write
- * @param data The data to write
- * @return int 0 if successful, or -1 if an error occurred
- */
 int __i2c_fram_write_byte(i2c_inst_t* i2c, uint16_t addr, uint8_t data)
 {
 	if(__i2c_fram_write_bytes(i2c, addr, 1, &data) == PICO_ERROR_GENERIC){
@@ -97,14 +64,6 @@ int __i2c_fram_write_byte(i2c_inst_t* i2c, uint16_t addr, uint8_t data)
 	return 0;
 }
 
-/**
- * @brief Write a word to a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address to which to write
- * @param data The data to write
- * @return int 0 if successful, or -1 if an error occurred
- */
 int __i2c_fram_write_word(i2c_inst_t* i2c, uint16_t addr, uint16_t data)
 {
     uint8_t buf[2];
@@ -135,13 +94,6 @@ int __get_device_id(i2c_inst_t* i2c, uint16_t *manuf_id, uint16_t *prod_id)
 * functions for external use
 **/
 
-
-/**
- * @brief Initialize the I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @return int 0 if successful, or -1 if an error occurred
- */
 int rc_initialize_fram(i2c_inst_t* i2c)
 {
     // This function is broken, because __get_device_id is broken
@@ -160,70 +112,30 @@ int rc_initialize_fram(i2c_inst_t* i2c)
     return 0;
 }
 
-/**
- * @brief Read bytes from a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address from which to read
- * @param length The number of bytes to read
- * @param data Pointer to store the read data
- * @return int Number of bytes read, or -1 if an error occurred
- */
 int rc_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
 {
     int ret = __i2c_fram_read_bytes(i2c, addr, length, data);
     return ret;
 }
 
-/**
- * @brief Write bytes to a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address to which to write
- * @param length The number of bytes to write
- * @param data Pointer to the data to write
- * @return int 0 if successful, or -1 if an error occurred
- */
 int rc_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
 {
     int ret = __i2c_fram_write_bytes(i2c, addr, length, data);
     return ret;
 }
 
-/**
- * @brief Read a word from a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address from which to read
- * @param data Pointer to store the read data
- * @return int Number of bytes read, or -1 if an error occurred
- */
 int rc_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
 {
     int ret = __i2c_fram_read_word(i2c, addr, data);
     return ret;
 }
 
-/**
- * @brief Write a word to a given address in I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @param addr The address to which to write
- * @param data The data to write
- * @return int 0 if successful, or -1 if an error occurred
- */
 int rc_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data)
 {
     int ret = __i2c_fram_write_word(i2c, addr, data);
     return ret;
 }
 
-/**
- * @brief Erase the I2C FRAM
- * 
- * @param i2c Pointer to the I2C instance
- * @return int 0 if successful, or -1 if an error occurred
- */
 int rc_erase_fram(i2c_inst_t* i2c)
 {   
     int16_t i = 0;

@@ -1,6 +1,6 @@
 /**
  *
- * @brief      Functions to use the encoders
+ * @brief Functions to use the encoders
  *
  * @author pgaskell
  * @date 2022
@@ -25,9 +25,9 @@ int rc_encoder_init() {
 
     uint offset = pio_add_program(pio, &quadrature_encoder_program);
 
-    quadrature_encoder_program_init(pio, sm0, offset, PIN0_AB, 0);
-    quadrature_encoder_program_init(pio, sm1, offset, PIN1_AB, 0);
-    quadrature_encoder_program_init(pio, sm2, offset, PIN2_AB, 0);
+    quadrature_encoder_program_init(pio, sm0, offset, ENC0_A_PIN, 0);
+    quadrature_encoder_program_init(pio, sm1, offset, ENC1_A_PIN, 0);
+    quadrature_encoder_program_init(pio, sm2, offset, ENC2_A_PIN, 0);
 
     quadrature_encoder_set_count(sm0, 0);
     quadrature_encoder_set_count(sm1, 0);
