@@ -63,4 +63,14 @@ serial_mbot_motor_pwm_t mbot_motor_pwm_cmd = {0};
 serial_mbot_motor_vel_t mbot_motor_vel_cmd = {0};
 serial_timestamp_t mbot_received_time = {0};
 
+//callback functions
+void timestamp_cb(serial_timestamp_t *msg);
+void reset_encoders_cb(serial_mbot_encoders_t *msg);
+void reset_odometry_cb(serial_pose2D_t *msg);
+void mbot_vel_cmd_cb(serial_twist2D_t *msg);
+void mbot_motor_vel_cmd_cb(serial_mbot_motor_vel_t *msg);
+void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg);
+bool mbot_loop(repeating_timer_t *rt);
+
+
 #endif

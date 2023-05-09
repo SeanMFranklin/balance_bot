@@ -85,11 +85,12 @@ bool mbot_loop(repeating_timer_t *rt)
         
 
         if(drive_mode = MODE_MOTOR_VEL){
-            mbot_motor_vel_controller(mbot_motor_vel_cmd, &mbot_motor_pwm_cmd);
+            //mbot_motor_vel_controller(mbot_motor_vel_cmd, &mbot_motor_pwm_cmd);
         }
 
         else if(drive_mode = MODE_MBOT_VEL){
-            mbot_motor_vel_controller(mbot_vel_cmd, &mbot_motor_pwm_cmd);
+            //mbot_motor_vel_controller(mbot_vel_cmd, &mbot_motor_pwm_cmd);
+            
         }
 
         // Set motors

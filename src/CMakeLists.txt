@@ -1,7 +1,11 @@
 #MBOT
 add_executable(mbot
   mbot.c
+  print_tables.c
 )
+
+include_directories(/usr/local/include)
+
 target_link_libraries(mbot
   pico_stdlib
   pico_multicore

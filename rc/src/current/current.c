@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <pico/stdlib.h>
 #include <hardware/adc.h>
+#include <rc/defs/mbot_defs.h>
 
 #include <rc/current/current.h>
 #define ADC_TO_VOLT 0.000732421875

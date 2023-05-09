@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <pico/stdlib.h>
 
 #ifndef RC_ENCODER_H
@@ -32,7 +33,7 @@ int rc_encoder_cleanup();
  * @param ch The channel to read from
  * @return int Returns the current delta (signed 32-bit integer) or -1 if there is a problem.
  */
-int rc_encoder_read_delta(uint ch);
+int rc_encoder_read_delta(uint8_t ch);
 
 /**
  * @brief Reads the current count of an encoder channel. The count is a signed 32-bit integer that wraps around at +- 2^31
@@ -40,7 +41,7 @@ int rc_encoder_read_delta(uint ch);
  * @param ch The channel to read from
  * @return int Returns the current count (signed 32-bit integer) or -1 if there is a problem.
  */
-int rc_encoder_read_count(uint ch);
+int rc_encoder_read_count(uint8_t ch);
 
 /**
  * @brief Sets the current position of an encoder channel. Typically used to reset a counter to 0, but can set an arbitrary position.
@@ -49,6 +50,6 @@ int rc_encoder_read_count(uint ch);
  * @param pos The position to set
  * @return int Returns 0 on success, -1 on failure
  */
-int rc_encoder_write(uint ch, int pos);
+int rc_encoder_write(uint8_t ch, int pos);
 
 #endif /* RC_ENCODER_H */

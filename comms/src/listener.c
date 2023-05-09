@@ -1,7 +1,7 @@
 #include <comms/listener.h>
 
 // Function to read the header
-bool read_header(uint8_t* header_data) {
+int read_header(uint8_t* header_data) {
     char trigger_val = 0x00;
     int rc = PICO_ERROR_NO_DATA;
     while(trigger_val != 0xff || rc == PICO_ERROR_NO_DATA)
@@ -14,7 +14,7 @@ bool read_header(uint8_t* header_data) {
 }
 
 // Function to validate the header
-bool validate_header(uint8_t* header_data) {
+int validate_header(uint8_t* header_data) {
     bool valid_header = (header_data[1] == 0xfe);
     uint8_t cs1_addends[2] = {header_data[2], header_data[3]};
     uint8_t cs_msg_len = checksum(cs1_addends, 2);
@@ -23,7 +23,7 @@ bool validate_header(uint8_t* header_data) {
 }
 
 // Function to read the message
-bool read_message(uint8_t* header_data, uint8_t* msg_data_serialized, uint16_t message_len, char* topic_msg_data_checksum) {
+int read_message(uint8_t* header_data, uint8_t* msg_data_serialized, uint16_t message_len, char* topic_msg_data_checksum) {
     while(tud_cdc_n_available(1) < (message_len + 1))
     {
         //spin until the full set of message bytes have arrived
@@ -36,7 +36,7 @@ bool read_message(uint8_t* header_data, uint8_t* msg_data_serialized, uint16_t m
 }
 
 // Function to validate the message
-bool validate_message(uint8_t* header_data, uint8_t* msg_data_serialized, uint16_t message_len, char topic_msg_data_checksum) {
+int validate_message(uint8_t* header_data, uint8_t* msg_data_serialized, uint16_t message_len, char topic_msg_data_checksum) {
     uint8_t cs2_addends[message_len + 2]; 
     cs2_addends[0] = header_data[5];
     cs2_addends[1] = header_data[6];
