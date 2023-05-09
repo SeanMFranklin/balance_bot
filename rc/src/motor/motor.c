@@ -1,13 +1,19 @@
 #include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <rc/motor/motor.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
+#include <rc/defs/mbot_defs.h>
 
 #define MAX_PWM 32630
+#define FREQ 25000
 
 rc_motor_state MOTOR_STATE;
-uint32_t FREQ = DEFAULT_FREQ;
-uint16_t WRAP;
+
+static uint16_t pwm_wrap;
+static uint16_t pwm_freq = PWM_FREQ;
+
 
 //  Initializes all 3 motors and leaves them in a free-spin (0 throttle) state.
 //  This starts the motor drivers at the default value of FREQ. To use another frequency initialize with rc_motor_init_freq instead.
@@ -25,25 +31,28 @@ int rc_motor_init() {
     gpio_set_function(M0_PWM_PIN, GPIO_FUNC_PWM);
     gpio_set_function(M1_PWM_PIN, GPIO_FUNC_PWM);
     gpio_set_function(M2_PWM_PIN, GPIO_FUNC_PWM);
-    
+
     //  The higher the wrap value, the higher the resolution of the duty cycle. 
     //  The following formulas work out the best value for the clock frequency for any PWM frequency to maximize the duty cycle resolution.
     //  With default frequency of 25 kHz, divider16 equals 16 and WRAP equals 4999.
     //  For more details on the following calculations of the clock divider and wrap value visit:
     //  https://www.i-programmer.info/programming/hardware/14849-the-pico-in-c-basic-pwm.html?start=2
-    
-    uint32_t divider16 = CLOCK / FREQ / 4096 + (CLOCK % (FREQ * 4096) != 0);
-    if (divider16 / 16 == 0) divider16 = 16;
+
+    uint16_t divider16 = SYS_CLOCK / PWM_FREQ / 4096;
+
+    if (divider16 / 16 == 0) {
+        divider16 = 16;
+    }
     
     pwm_set_clkdiv_int_frac(M0_SLICE, divider16/16, divider16 & 0xF);
     pwm_set_clkdiv_int_frac(M1_SLICE, divider16/16, divider16 & 0xF);
     pwm_set_clkdiv_int_frac(M2_SLICE, divider16/16, divider16 & 0xF);
     
-    WRAP = CLOCK * 16 / divider16 / FREQ - 1;
+    pwm_wrap = SYS_CLOCK * 16 / divider16 / PWM_FREQ - 1;
     
-    pwm_set_wrap(M0_SLICE, WRAP);
-    pwm_set_wrap(M1_SLICE, WRAP);
-    pwm_set_wrap(M2_SLICE, WRAP);
+    pwm_set_wrap(M0_SLICE, pwm_wrap);
+    pwm_set_wrap(M1_SLICE, pwm_wrap);
+    pwm_set_wrap(M2_SLICE, pwm_wrap);
     
     pwm_set_enabled(M0_SLICE, true);
     pwm_set_enabled(M1_SLICE, true);
@@ -60,8 +69,8 @@ int rc_motor_init() {
 
 //  Initializes all 3 motors and leaves them in a free-spin (0 throttle) state. Returns 0 on success, -1 on failure.
 //  This starts the motor drivers at the specified frequency f.
-int rc_motor_init_freq(uint f) {
-    FREQ = f;
+int rc_motor_init_freq(uint16_t f) {
+    pwm_freq = f;
     return rc_motor_init();
 }
 
@@ -96,16 +105,13 @@ int rc_motor_cleanup() {
 //  motor = The motor channel (1-3) or 0 for all channels.
 //  duty = -2^15 (signed short lower limit) for full reverse, 2^15 (signed short upper limit) for full forward.
 //  Returns 0 on success, -1 on failure
-int rc_motor_set(uint ch, int32_t duty) {
+int rc_motor_set(uint8_t ch, int32_t duty) {
     if (duty < -MAX_PWM) duty = -MAX_PWM;
     else if (duty > MAX_PWM) duty = MAX_PWM;
 
-    bool direction = duty >= 0;
-    uint16_t level = WRAP * (uint16_t) ((direction)? (duty) : (-1 * duty)) / 32768;
-    // printf("duty: %d \r\n", duty);
-    // printf("WRAP: %d \r\n", WRAP);
-    // printf("direction: %d \r\n", direction);
-    // printf("level: %d \r\n", level);
+    bool direction = (duty >= 0);
+
+    uint16_t level = pwm_wrap * (uint16_t) ((direction)? (duty) : (-1 * duty)) / 32768;
 
     switch (ch) {
         case 0:
@@ -137,7 +143,7 @@ int rc_motor_set(uint ch, int32_t duty) {
 
 // Puts a motor into a zero-throttle state allowing it to spin freely.
 // Returns 0 on success, -1 on failure
-int rc_motor_free_spin(uint ch) {
+int rc_motor_free_spin(uint8_t ch) {
     unsigned int slice, channel;
     
     switch (ch) {
@@ -166,7 +172,7 @@ int rc_motor_free_spin(uint ch) {
 }
 
 // Returns 0 on success, -1 on failure
-int rc_motor_brake(uint ch) {
+int rc_motor_brake(uint8_t ch) {
     unsigned int slice, channel, direction;
     
     switch (ch) {

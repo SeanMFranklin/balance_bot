@@ -5,6 +5,7 @@
 #include <pico/mutex.h>
 #include <pico/multicore.h>
 #include <pico/time.h>
+#include <hardware/gpio.h>
 #include <rc/motor/motor.h>
 #include <rc/encoder/encoder.h>
 #include <rc/motor/motor.h>

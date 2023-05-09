@@ -24,7 +24,7 @@ void register_topics()
     comms_register_topic(MBOT_ODOMETRY, sizeof(serial_pose2D_t), (Deserialize)&pose2D_t_deserialize, (Serialize)&pose2D_t_serialize, NULL);
     comms_register_topic(MBOT_IMU, sizeof(serial_mbot_imu_t), (Deserialize)&mbot_imu_t_deserialize, (Serialize)&mbot_imu_t_serialize, NULL);
     comms_register_topic(MBOT_ENCODERS, sizeof(serial_mbot_encoders_t), (Deserialize)&mbot_encoders_t_deserialize, (Serialize)&mbot_encoders_t_serialize, NULL);
-    comms_register_topic(MBOT_VEL, sizeof(serial_twist2D_t), (Deserialize)&twist2D_t_deserialize, (Serialize)&twist2D_t_serialize);
+    comms_register_topic(MBOT_VEL, sizeof(serial_twist2D_t), (Deserialize)&twist2D_t_deserialize, (Serialize)&twist2D_t_serialize, NULL);
     comms_register_topic(MBOT_MOTOR_VEL, sizeof(serial_mbot_motor_vel_t), (Deserialize)&mbot_motor_vel_t_deserialize, (Serialize)&mbot_motor_vel_t_serialize, NULL);
     comms_register_topic(MBOT_MOTOR_PWM, sizeof(serial_mbot_motor_pwm_t), (Deserialize)&mbot_motor_pwm_t_deserialize, (Serialize)&mbot_motor_pwm_t_serialize, NULL);
 
@@ -34,7 +34,7 @@ void timestamp_cb(serial_timestamp_t *msg)
 {
     mbot_received_time.utime = msg->utime;
     uint64_t current_utime = to_us_since_boot(get_absolute_time());
-    timestamp_offset = received_time.utime - current_utime;
+    timestamp_offset = mbot_received_time.utime - current_utime;
 }
 
 void reset_encoders_cb(serial_mbot_encoders_t *msg)
@@ -237,7 +237,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("\r%s\n", buf);
     
     buf[0] = '\0';
-    float odom_array = {odometry.x, odometry.y, odometry.theta};
+    float odom_array[3] = {odometry.x, odometry.y, odometry.theta};
     generateTableFloat(buf, 1, 3, "ODOMETRY", imu_headings, odom_array);
     printf("\r%s\n", buf);
 

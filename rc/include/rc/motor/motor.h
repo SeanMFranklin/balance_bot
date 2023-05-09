@@ -1,7 +1,7 @@
 #ifndef RC_MOTOR_H
 #define RC_MOTOR_H
 
-typedef enum rc_motor_state {ON, OFF} rc_motor_state;
+typedef enum rc_motor_state {OFF, ON} rc_motor_state;
 
 int rc_motor_init();
 int rc_motor_init_freq(uint f);
