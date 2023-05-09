@@ -14,15 +14,13 @@
 #include <comms/protocol.h>
 #include <comms/listener.h>
 #include <comms/topic_data.h>
-#include <comms/mbot_messages.h>
+#include <comms/mbot_channels.h>
+
+#include <mbot_lcm_msgs_serial.h>
 
 #include <math.h>
 #include <inttypes.h>
 #include "mbot.h"
-
-#define LED_PIN 25
-#define MAIN_LOOP_HZ 50.0 // 50 hz loop
-#define MAIN_LOOP_PERIOD (1.0f / MAIN_LOOP_HZ)
 
 // data to hold current mpu state
 static rc_mpu_data_t mpu_data;
@@ -32,7 +30,7 @@ uint64_t current_pico_time = 0;
 
 float enc2meters = ((2.0 * PI * WHEEL_RADIUS) / (GEAR_RATIO * ENCODER_RES));
 
-void timestamp_cb(timestamp_t *received_timestamp)
+void timestamp_cb(serial_timestamp_t *msg)
 {
     // if we havent set the offset yet
     if (timestamp_offset == 0)
@@ -42,69 +40,39 @@ void timestamp_cb(timestamp_t *received_timestamp)
     }
 }
 
-void reset_encoders_cb(mbot_encoder_t *received_encoder_vals)
+void reset_encoders_cb(serial_mbot_encoders_t *msg)
 {
-    rc_encoder_write(LEFT_MOTOR_CHANNEL, received_encoder_vals->leftticks);
-    rc_encoder_write(RIGHT_MOTOR_CHANNEL, received_encoder_vals->rightticks);
+    for(ch=0; ch<3; ch++){
+        rc_encoder_write(ch, msg->ticks[ch]);
+    }
 }
 
-void reset_odometry_cb(odometry_t *received_odom)
+void reset_odometry_cb(serial_pose2D_t *msg)
 {
-    current_odom.utime = received_odom->utime;
-    current_odom.x = received_odom->x;
-    current_odom.y = received_odom->y;
-    current_odom.theta = received_odom->theta;
-}
-
-int write_pid_coefficients(i2c_inst_t *i2c)
-{
-    uint8_t pid_bytes[PID_VALUES_LEN];
-    memcpy(pid_bytes, &mbot_pid_gains, PID_VALUES_LEN);
-    return rc_write_fram(i2c, PID_VALUES_ADDR, PID_VALUES_LEN, &pid_bytes[0]);
-}
-
-void pid_values_cb(mbot_pid_gains_t *received_pid_gains)
-{
-    memcpy(&mbot_pid_gains, received_pid_gains, sizeof(mbot_pid_gains_t));
-    write_pid_coefficients(i2c);
+    current_odom.utime = msg->utime;
+    current_odom.x = msg->x;
+    current_odom.y = msg->y;
+    current_odom.theta = msg->theta;
 }
 
 void register_topics()
 {
-    // timesync topic
-    comms_register_topic(MBOT_TIMESYNC, sizeof(timestamp_t), (Deserialize)&timestamp_t_deserialize, (Serialize)&timestamp_t_serialize, (MsgCb)&timestamp_cb);
-    // odometry topic
-    comms_register_topic(ODOMETRY, sizeof(odometry_t), (Deserialize)&odometry_t_deserialize, (Serialize)&odometry_t_serialize, NULL);
-    // reset odometry topic
-    comms_register_topic(RESET_ODOMETRY, sizeof(odometry_t), (Deserialize)&odometry_t_deserialize, (Serialize)&odometry_t_serialize, (MsgCb)&reset_odometry_cb);
-    // IMU topic
-    comms_register_topic(MBOT_IMU, sizeof(mbot_imu_t), (Deserialize)&mbot_imu_t_deserialize, (Serialize)&mbot_imu_t_serialize, NULL);
-    // encoders topic
-    comms_register_topic(MBOT_ENCODERS, sizeof(mbot_encoder_t), (Deserialize)&mbot_encoder_t_deserialize, (Serialize)&mbot_encoder_t_serialize, NULL);
-    // reset encoders topic
-    comms_register_topic(RESET_ENCODERS, sizeof(mbot_encoder_t), (Deserialize)&mbot_encoder_t_deserialize, (Serialize)&mbot_encoder_t_serialize, (MsgCb)&reset_encoders_cb);
-    // motor commands topic
-    comms_register_topic(MBOT_MOTOR_COMMAND, sizeof(mbot_motor_command_t), (Deserialize)&mbot_motor_command_t_deserialize, (Serialize)&mbot_motor_command_t_serialize, NULL);
-    // PID values topic
-    comms_register_topic(MBOT_PIDS, sizeof(mbot_pid_gains_t), (Deserialize)&mbot_pid_gains_t_deserialize, (Serialize)&mbot_pid_gains_t_serialize, (MsgCb)&pid_values_cb);
+    // Subscriptions
+    comms_register_topic(MBOT_TIMESYNC, sizeof(serial_timestamp_t), (Deserialize)&timestamp_t_deserialize, (Serialize)&timestamp_t_serialize, (MsgCb)&timestamp_cb);
+    comms_register_topic(MBOT_ODOMETRY_RESET,  sizeof(serial_pose2D_t), (Deserialize)&pose2D_t_deserialize, (Serialize)&pose2D_t_serialize, (MsgCb)&reset_odometry_cb);
+    comms_register_topic(MBOT_ENCODERS_RESET, sizeof(serial_mbot_encoders_t), (Deserialize)&mbot_encoders_t_deserialize, (Serialize)&mbot_encoders_t_serialize, (MsgCb)&reset_encoders_cb);
+    comms_register_topic(MBOT_MOTOR_PWM_CMD, sizeof(serial_mbot_motor_pwm_t), (Deserialize)&mbot_motor_pwm_t_deserialize, (Serialize)&mbot_motor_pwm_t_serialize, (MsgCb)serial_motor_vel_cb);
+    comms_register_topic(MBOT_MOTOR_VEL_CMD, sizeof(serial_mbot_motor_vel_t), (Deserialize)&mbot_motor_vel_t_deserialize, (Serialize)&mbot_motor_vel_t_serialize, (MsgCb)serial_motor_pwm_cb);
+    comms_register_topic(MBOT_VEL_CMD, sizeof(serial_twist2D_t), (Deserialize)&twist2D_t_deserialize, (Serialize)&twist2D_t_serialize, (MsgCb)serial_mbot_vel_cb);
+
+    // Published Topics
+    comms_register_topic(MBOT_ODOMETRY, sizeof(serial_pose2D_t), (Deserialize)&pose2D_t_deserialize, (Serialize)&pose2D_t_serialize, NULL);
+    comms_register_topic(MBOT_IMU, sizeof(serial_mbot_imu_t), (Deserialize)&mbot_imu_t_deserialize, (Serialize)&mbot_imu_t_serialize, NULL);
+    comms_register_topic(MBOT_ENCODERS, sizeof(serial_mbot_encoders_t), (Deserialize)&mbot_encoders_t_deserialize, (Serialize)&mbot_encoders_t_serialize, NULL);
+    comms_register_topic(MBOT_MOTOR_VEL, sizeof(serial_mbot_motor_vel_t), (Deserialize)&mbot_motor_vel_t_deserialize, (Serialize)&mbot_motor_vel_t_serialize, NULL);
 }
 
-void read_pid_coefficients(i2c_inst_t *i2c)
-{
-    uint8_t pid_bytes[PID_VALUES_LEN];
-
-    if (rc_read_fram(i2c, PID_VALUES_ADDR, PID_VALUES_LEN, pid_bytes) > 0)
-    {
-        printf("reading fram success.\n");
-        memcpy(&mbot_pid_gains, pid_bytes, PID_VALUES_LEN);
-        printf("read gains from fram!\r\n");
-    }
-    else
-    {
-        printf("reading PID gains from fram failure.\n");
-    }
-}
-
+//TODO: this should be tied to the IMU interrupt
 bool timer_cb(repeating_timer_t *rt)
 {
     // Read the PID values
@@ -274,7 +242,7 @@ int main()
 {
     bi_decl(bi_program_description("Firmware for the MBot Robot Control Board"));
     
-    set_sys_clock_khz(250000, true); // set master clock to 250MHz (if problematic try 125Mhz)
+    set_sys_clock_khz(SYS_CLOCK, true); // set master clock to 250MHz (if problematic try 125Mhz)
     stdio_init_all(); // enable USB serial terminal
     sleep_ms(1500); // quick sleep so we can catch the bootup process in terminal
     printf("\nMBot Booting Up!\n");
@@ -284,24 +252,17 @@ int main()
     printf("initializinging encoders...\n");
     rc_encoder_init();
 
-    // Pins
-    // for the i2c to the IMU
-    const uint sda_pin = 4;
-    const uint scl_pin = 5;
-
-    // Ports
-    i2c = i2c0;
     // Initialize I2C port at 400 kHz
+    i2c = i2c0;
     i2c_init(i2c, 400 * 1000);
     // Initialize I2C pins
-    printf("setting i2c functions...\n");
-    gpio_set_function(sda_pin, GPIO_FUNC_I2C);
-    gpio_set_function(scl_pin, GPIO_FUNC_I2C);
-    printf("setting i2c pullups...\n");
-    gpio_pull_up(sda_pin);
-    gpio_pull_up(scl_pin);
+    printf("setting i2c bus...\n");
+    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(SDA_PIN);
+    gpio_pull_up(SCL_PIN);
     // Make the I2C pins available to picotool
-    bi_decl(bi_2pins_with_func(sda_pin, scl_pin, GPIO_FUNC_I2C));
+    bi_decl(bi_2pins_with_func(SDA_PIN, SCL_PIN, GPIO_FUNC_I2C));
 
     printf("setting heartbeat LED GPIOs...\n");
     gpio_init(LED_PIN);

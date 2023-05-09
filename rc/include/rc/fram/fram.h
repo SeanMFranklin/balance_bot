@@ -1,10 +1,3 @@
-/**
- * @brief
- *
- * @param
- *
- * @return     0 on success or -1 on failure.
- */
 #ifndef RC_FRAM_H
 #define RC_FRAM_H
 
@@ -17,9 +10,8 @@
 #define FUJITSU_MANUF_ID 0x00A
 
 #define MAXADDRESS 512
-#define PROD_ID_MB85RC04V 0x010	// 4K
-#define DENSITY_MB85RC04V 0x0	// 4K
-
+#define PROD_ID_MB85RC04V 0x010	// 4k version
+#define DENSITY_MB85RC04V 0x0	// 4k version
 #define MB85RC_ADDRESS_A00   0x50
 #define MB85RC_ADDRESS_A01   0x52
 #define MB85RC_ADDRESS_A10   0x54

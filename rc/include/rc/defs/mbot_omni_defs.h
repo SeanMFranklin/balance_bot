@@ -3,9 +3,6 @@
 #ifndef RC_OMNI_DEFS_H
 #define RC_OMNI_DEFS_H
 
-#define A_MOTOR_CHANNEL         3
-#define B_MOTOR_CHANNEL         1
-#define C_MOTOR_CHANNEL         2
 #define OMNI_BASE_RADIUS        0.10250
 #define OMNI_WHEEL_RADIUS       0.048
 #define OLD_OMNI_WHEEL_RADIUS	0.050
