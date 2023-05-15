@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <rc/motor/motor.h>
+#include <mbot/motor/motor.h>
 #include <pico/stdlib.h>
 #include <hardware/adc.h>
 

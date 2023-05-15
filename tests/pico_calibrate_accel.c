@@ -5,9 +5,10 @@
 #include <pico/stdlib.h>
 #include <pico/mutex.h>
 #include <pico/multicore.h>
+#include <hardware/gpio.h>
 #include <rc/mpu/mpu.h>
 #include <comms/common.h>
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 #define DEBUG
 
 static rc_mpu_data_t mpu_data;

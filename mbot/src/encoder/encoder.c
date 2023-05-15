@@ -12,8 +12,8 @@
 #include <stdbool.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
-#include <rc/encoder/encoder.h>
-#include <rc/defs/mbot_defs.h>
+#include <mbot/encoder/encoder.h>
+#include <mbot/defs/mbot_defs.h>
 #include "quadrature_encoder.pio.h"
 
 PIO pio;

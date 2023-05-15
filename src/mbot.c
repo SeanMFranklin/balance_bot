@@ -1,6 +1,7 @@
 /**
  * This file is the main executable for the MBot firmware.
  */
+#include <pico/stdlib.h>
 #include "mbot.h"
 #include "print_tables.h"
 
@@ -254,6 +255,6 @@ int main()
     printf("Done Booting Up!\n\n");
     running = true;
     while(running){
-        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);   
+        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
     }
 }

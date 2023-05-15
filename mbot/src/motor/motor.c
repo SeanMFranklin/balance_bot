@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <rc/motor/motor.h>
+#include <mbot/motor/motor.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
-#include <rc/defs/mbot_defs.h>
+#include <mbot/defs/mbot_defs.h>
 
 #define MAX_PWM 32630
 #define FREQ 25000

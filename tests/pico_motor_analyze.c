@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <rc/motor/motor.h>
-#include <rc/encoder/encoder.h>
+#include <mbot/motor/motor.h>
+#include <mbot/encoder/encoder.h>
 #include <pico/stdlib.h>
 #include <hardware/adc.h>
 

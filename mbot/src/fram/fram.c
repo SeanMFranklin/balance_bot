@@ -7,7 +7,7 @@
  * 
  */
 
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
 int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);

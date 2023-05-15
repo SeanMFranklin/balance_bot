@@ -1,1 +1,0 @@
-#include <rc/defs/mbot_defs.h>

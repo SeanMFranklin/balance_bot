@@ -8,7 +8,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pio.h"
 #include "hardware/timer.h"
-#include <rc/encoder/encoder.h>
+#include <mbot/encoder/encoder.h>
 
 int main() {
     int d1, d2, d3, t1, t2, t3 = 0;

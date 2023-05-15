@@ -14,6 +14,7 @@ target_link_libraries(mbot
   hardware_sync
   hardware_i2c
   hardware_flash
+  mbotlib
   rclib
   comms
 )

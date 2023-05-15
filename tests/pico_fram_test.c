@@ -3,7 +3,7 @@
 #include <pico/stdlib.h>
 #include <pico/binary_info.h>
 #include <hardware/i2c.h>
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 
 int main() {
     stdio_init_all();
