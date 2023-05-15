@@ -1,13 +1,13 @@
-#ifndef RC_MOTOR_H
-#define RC_MOTOR_H
+#ifndef MBOT_MOTOR_H
+#define MBOT_MOTOR_H
 
-typedef enum rc_motor_state {OFF, ON} rc_motor_state;
+typedef enum mbot_motor_state {OFF, ON} mbot_motor_state;
 
-int rc_motor_init();
-int rc_motor_init_freq(uint16_t f);
-int rc_motor_cleanup();
-int rc_motor_set(uint8_t ch, int32_t duty);
-int rc_motor_free_spin(uint8_t ch);
-int rc_motor_brake(uint8_t ch);
+int mbot_motor_init();
+int mbot_motor_init_freq(uint16_t f);
+int mbot_motor_cleanup();
+int mbot_motor_set(uint8_t ch, int32_t duty);
+int mbot_motor_free_spin(uint8_t ch);
+int mbot_motor_brake(uint8_t ch);
 
-#endif /* RC_MOTOR_H */
+#endif /* MBOT_MOTOR_H */

@@ -22,8 +22,8 @@ int main() {
     adc_gpio_init(26);
     adc_gpio_init(27);
     adc_gpio_init(28);
-    rc_motor_init();
-    rc_encoder_init();
+    mbot_motor_init();
+    mbot_encoder_init();
     blink();
     printf("\nTesting motor 1...\n");
     int32_t d = 0;
@@ -33,8 +33,8 @@ int main() {
     printf("\nDuty\tSpeed\tCurrent\n");
     adc_select_input(0);
     for (; d < INT_16_MAX; d += INT_16_MAX/NUM_POINTS) {
-        rc_motor_set(1, d);
-        encoder_reading = -rc_encoder_read_delta(1);
+        mbot_motor_set(1, d);
+        encoder_reading = -mbot_encoder_read_delta(1);
         wheel_speed = RPM_conversion_factor * encoder_reading;
         current_reading = 0.0;
         for(int i=0; i<10; i++){
@@ -43,15 +43,15 @@ int main() {
         printf("%f\t%f\t%f\n", (float)d/(float)INT_16_MAX, wheel_speed, current_reading);
         sleep_ms(1000*TIMESTEP_S);
     }
-    rc_motor_set(1, 0);
+    mbot_motor_set(1, 0);
     d = 0;
     sleep_ms(3000);
     adc_select_input(2);
     printf("\nTesting motor 3...\n");
     printf("\nDuty\tSpeed\tCurrent\n");
     for (; d < INT_16_MAX; d += INT_16_MAX/NUM_POINTS) {
-        rc_motor_set(3, d);
-        encoder_reading = -rc_encoder_read_delta(3);
+        mbot_motor_set(3, d);
+        encoder_reading = -mbot_encoder_read_delta(3);
         wheel_speed = RPM_conversion_factor * encoder_reading;
         current_reading = 0.0;
         for(int i=0; i<10; i++){
@@ -64,7 +64,7 @@ int main() {
     blink();
     printf("\nDone!\n");
     
-    rc_motor_cleanup(); 
+    mbot_motor_cleanup(); 
     blink();
     return 0;
 }

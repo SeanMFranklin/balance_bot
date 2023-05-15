@@ -9,7 +9,8 @@
 #include <mbot/motor/motor.h>
 #include <mbot/encoder/encoder.h>
 #include <mbot/motor/motor.h>
-#include <mbot/defs/mbot_defs.h>
+#include <mbot/defs/mbot_pins.h>
+#include <mbot/defs/mbot_params.h>
 #include <mbot/fram/fram.h>
 #include <rc/math/filter.h>
 #include <rc/mpu/mpu.h>

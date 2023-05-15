@@ -1,11 +1,5 @@
-#ifndef RC_DEFS_H
-#define RC_DEFS_H
-
-#define SYS_CLOCK       250000 //system clock in kHz
-#define PWM_FREQ        25000
-
-#define MAIN_LOOP_HZ            50.0 // Hz of control loop
-#define MAIN_LOOP_PERIOD        (1.0f / MAIN_LOOP_HZ)
+#ifndef MBOT_PIN_DEFS_H
+#define MBOT_PIN_DEFS_H
 
 // Motor Pin Definitions
 #define M0_DIR_PIN      14
@@ -41,11 +35,5 @@
 
 // LED on the Pico
 #define LED_PIN        25
-
-#define MPU_FINAL_FRAM_ADDR     102 // final address of MPU calibration
-
-// Hardware Parameters
-#define GEAR_RATIO              78.0
-#define ENCODER_RES             20.0 // 40.0 for ROB103 encoders
 
 #endif

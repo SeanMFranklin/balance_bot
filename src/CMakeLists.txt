@@ -1,6 +1,7 @@
 #MBOT
 add_executable(mbot
   mbot.c
+  odometry.c
   print_tables.c
 )
 

@@ -2,12 +2,14 @@
  * This file is the main executable for the MBot firmware.
  */
 #include <pico/stdlib.h>
+#include <hardware/gpio.h>
 #include "mbot.h"
+#include "odometry.h"
 #include "print_tables.h"
 
 // Global
 uint64_t timestamp_offset = 0;
-uint64_t current_utime = 0;
+uint64_t global_utime = 0;
 int drive_mode = 0;
 bool running = false;
 
@@ -42,7 +44,7 @@ void reset_encoders_cb(serial_mbot_encoders_t *msg)
 {
     //memcpy(&encoders, msg, sizeof(serial_mbot_encoders_t));
     for(int i=0; i<3; i++){
-        rc_encoder_write(i, msg->ticks[i]);
+        mbot_encoder_write(i, msg->ticks[i]);
     }
 }
 
@@ -77,27 +79,34 @@ bool mbot_loop(repeating_timer_t *rt)
     // only run if we've received a timesync message...
     if (comms_get_topic_data(MBOT_TIMESYNC, &mbot_received_time))
     {
-        uint64_t current_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
-        mbot_read_imu(&mbot_imu);
+        global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
+        //mbot_read_imu(&mbot_imu);
         mbot_read_encoders(&mbot_encoders);
         mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
-        mbot_calculate_mbot_vel(mbot_imu, mbot_motor_vel, &mbot_vel);
-        mbot_calculate_odometry(mbot_vel, &mbot_odometry);
-        
+        mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[LEFT_MOTOR], mbot_motor_vel.velocity[RIGHT_MOTOR], &mbot_vel);
+        mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
+        mbot_vel.utime = global_utime;
 
         if(drive_mode = MODE_MOTOR_VEL){
-            //mbot_motor_vel_controller(mbot_motor_vel_cmd, &mbot_motor_pwm_cmd);
+            mbot_motor_pwm.utime = global_utime;
+            //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
         }
-
         else if(drive_mode = MODE_MBOT_VEL){
-            //mbot_motor_vel_controller(mbot_vel_cmd, &mbot_motor_pwm_cmd);
-            
+            mbot_motor_pwm.utime = global_utime;
+            //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
+        }
+        else {
+            drive_mode = MODE_MOTOR_PWM;
+            mbot_motor_pwm.utime = global_utime;
+            mbot_motor_pwm.pwm[0] = mbot_motor_pwm_cmd.pwm[0];
+            mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
+            mbot_motor_pwm.pwm[2] = mbot_motor_pwm_cmd.pwm[2];
         }
 
         // Set motors
-        rc_motor_set(0, mbot_motor_pwm_cmd.pwm[0]);
-        rc_motor_set(1, mbot_motor_pwm_cmd.pwm[1]);
-        rc_motor_set(2, mbot_motor_pwm_cmd.pwm[2]);
+        mbot_motor_set(0, mbot_motor_pwm_cmd.pwm[0]);
+        mbot_motor_set(1, mbot_motor_pwm_cmd.pwm[1]);
+        mbot_motor_set(2, mbot_motor_pwm_cmd.pwm[2]);
 
         // write the encoders to serial
         comms_write_topic(MBOT_ENCODERS, &mbot_encoders);
@@ -105,6 +114,12 @@ bool mbot_loop(repeating_timer_t *rt)
         comms_write_topic(MBOT_ODOMETRY, &mbot_odometry);
         // write the IMU to serial
         comms_write_topic(MBOT_IMU, &mbot_imu);
+        // write the Body velocity to serial
+        comms_write_topic(MBOT_VEL, &mbot_vel);
+        // write the Motor velocity to serial
+        comms_write_topic(MBOT_MOTOR_VEL, &mbot_motor_vel);
+        // write the PWMs to serial
+        comms_write_topic(MBOT_MOTOR_PWM, &mbot_motor_pwm);
         //uint64_t fn_run_len = to_us_since_boot(get_absolute_time()) + timestamp_offset - cur_pico_time;
     }
 
@@ -118,28 +133,20 @@ mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_
     motor_vel->velocity[2] = (conversion / encoders.delta_time) * encoders.delta_ticks[2];
 }
 
-mbot_calculate_mbot_vel(serial_mbot_imu_t imu, serial_mbot_motor_vel_t motor_vel, serial_twist2D_t *mbot_vel){
-    // nothing here yet
-}
-
-void mbot_calculate_odometry(serial_twist2D_t mbot_vel, serial_pose2D_t *odometry){
-    // nothing here yet
-}
-
 void mbot_read_imu(serial_mbot_imu_t *imu){
     // nothing here yet
 }
 
 void mbot_read_encoders(serial_mbot_encoders_t* encoders){
-    int64_t delta_time = current_utime - encoders->utime;
-    encoders->utime = current_utime;
+    int64_t delta_time = global_utime - encoders->utime;
+    encoders->utime = global_utime;
     encoders->delta_time = delta_time;
-    encoders->ticks[0] = rc_encoder_read_count(0);
-    encoders->ticks[1] = rc_encoder_read_count(1);
-    encoders->ticks[2] = rc_encoder_read_count(2);
-    encoders->delta_ticks[0] = rc_encoder_read_delta(0);
-    encoders->delta_ticks[1] = rc_encoder_read_delta(1);
-    encoders->delta_ticks[2] = rc_encoder_read_delta(2);
+    encoders->ticks[0] = mbot_encoder_read_count(0);
+    encoders->ticks[1] = mbot_encoder_read_count(1);
+    encoders->ticks[2] = mbot_encoder_read_count(2);
+    encoders->delta_ticks[0] = mbot_encoder_read_delta(0);
+    encoders->delta_ticks[1] = mbot_encoder_read_delta(1);
+    encoders->delta_ticks[2] = mbot_encoder_read_delta(2);
 }
 
 int mbot_init_pico(void){
@@ -160,9 +167,9 @@ int mbot_init_hardware(void){
 
     // Initialize Motors
     printf("initializinging motors...\n");
-    rc_motor_init();
+    mbot_motor_init();
     printf("initializinging encoders...\n");
-    rc_encoder_init();
+    mbot_encoder_init();
 
     // Initialize I2C
     printf("setting i2c bus...\n");
@@ -240,7 +247,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     
     buf[0] = '\0';
     float odom_array[3] = {odometry.x, odometry.y, odometry.theta};
-    generateTableFloat(buf, 1, 3, "ODOMETRY", imu_headings, odom_array);
+    generateTableFloat(buf, 1, 3, "ODOMETRY", odom_headings, odom_array);
     printf("\r%s\n", buf);
 
 }
