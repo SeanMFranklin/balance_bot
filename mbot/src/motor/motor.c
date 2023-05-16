@@ -1,24 +1,25 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <rc/motor/motor.h>
+#include <mbot/motor/motor.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
-#include <rc/defs/mbot_defs.h>
+#include <mbot/defs/mbot_pins.h>
+#include <mbot/defs/mbot_params.h>
 
 #define MAX_PWM 32630
 #define FREQ 25000
 
-rc_motor_state MOTOR_STATE;
+mbot_motor_state MOTOR_STATE;
 
 static uint16_t pwm_wrap;
 static uint16_t pwm_freq = PWM_FREQ;
 
 
 //  Initializes all 3 motors and leaves them in a free-spin (0 throttle) state.
-//  This starts the motor drivers at the default value of FREQ. To use another frequency initialize with rc_motor_init_freq instead.
+//  This starts the motor drivers at the default value of FREQ. To use another frequency initialize with mbot_motor_init_freq instead.
 //  Returns 0 on success, -1 on failure.
-int rc_motor_init() {
+int mbot_motor_init() {
     MOTOR_STATE = ON;
     gpio_init(M0_DIR_PIN);
     gpio_init(M1_DIR_PIN);
@@ -58,7 +59,7 @@ int rc_motor_init() {
     pwm_set_enabled(M1_SLICE, true);
     pwm_set_enabled(M2_SLICE, true);
     
-    rc_motor_set(0, 0);
+    mbot_motor_set(0, 0);
     
     int dir_success = gpio_get_dir(M0_DIR_PIN) & gpio_get_dir(M1_DIR_PIN) & gpio_get_dir(M2_DIR_PIN);
     int pwm_success = (gpio_get_function(M0_PWM_PIN) == GPIO_FUNC_PWM) &
@@ -69,14 +70,14 @@ int rc_motor_init() {
 
 //  Initializes all 3 motors and leaves them in a free-spin (0 throttle) state. Returns 0 on success, -1 on failure.
 //  This starts the motor drivers at the specified frequency f.
-int rc_motor_init_freq(uint16_t f) {
+int mbot_motor_init_freq(uint16_t f) {
     pwm_freq = f;
-    return rc_motor_init();
+    return mbot_motor_init();
 }
 
 // Puts all 3 motors into a free-spin (0 throttle) state, puts the h-bridges into standby mode, and closes all file pointers to GPIO and PWM systems.
 // Returns 0 on success, -1 on failure
-int rc_motor_cleanup() {
+int mbot_motor_cleanup() {
     if (MOTOR_STATE == OFF) return 0;
     MOTOR_STATE = OFF;
     
@@ -105,7 +106,7 @@ int rc_motor_cleanup() {
 //  motor = The motor channel (1-3) or 0 for all channels.
 //  duty = -2^15 (signed short lower limit) for full reverse, 2^15 (signed short upper limit) for full forward.
 //  Returns 0 on success, -1 on failure
-int rc_motor_set(uint8_t ch, int32_t duty) {
+int mbot_motor_set(uint8_t ch, int32_t duty) {
     if (duty < -MAX_PWM) duty = -MAX_PWM;
     else if (duty > MAX_PWM) duty = MAX_PWM;
 
@@ -143,7 +144,7 @@ int rc_motor_set(uint8_t ch, int32_t duty) {
 
 // Puts a motor into a zero-throttle state allowing it to spin freely.
 // Returns 0 on success, -1 on failure
-int rc_motor_free_spin(uint8_t ch) {
+int mbot_motor_free_spin(uint8_t ch) {
     unsigned int slice, channel;
     
     switch (ch) {
@@ -172,7 +173,7 @@ int rc_motor_free_spin(uint8_t ch) {
 }
 
 // Returns 0 on success, -1 on failure
-int rc_motor_brake(uint8_t ch) {
+int mbot_motor_brake(uint8_t ch) {
     unsigned int slice, channel, direction;
     
     switch (ch) {

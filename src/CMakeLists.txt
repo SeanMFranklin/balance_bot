@@ -1,6 +1,7 @@
 #MBOT
 add_executable(mbot
   mbot.c
+  odometry.c
   print_tables.c
 )
 
@@ -14,6 +15,7 @@ target_link_libraries(mbot
   hardware_sync
   hardware_i2c
   hardware_flash
+  mbotlib
   rclib
   comms
 )

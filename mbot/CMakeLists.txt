@@ -1,0 +1,28 @@
+add_library(mbotlib STATIC
+  # MOTOR
+  src/motor/motor.c
+  # ENCODER
+  src/encoder/encoder.c
+  # FRAM chip
+  src/fram/fram.c
+  # DEFS
+  src/defs/mbot_defs.c
+)
+
+
+
+target_link_libraries(mbotlib
+pico_stdlib
+pico_multicore
+hardware_pwm
+hardware_i2c
+hardware_pio
+hardware_adc
+hardware_flash
+)
+
+pico_generate_pio_header(mbotlib ${CMAKE_SOURCE_DIR}/mbot/include/mbot/encoder/quadrature_encoder.pio)
+
+target_include_directories(mbotlib PUBLIC
+  include
+)

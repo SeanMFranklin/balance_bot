@@ -7,7 +7,7 @@
  * 
  */
 
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
 int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);
@@ -94,7 +94,7 @@ int __get_device_id(i2c_inst_t* i2c, uint16_t *manuf_id, uint16_t *prod_id)
 * functions for external use
 **/
 
-int rc_initialize_fram(i2c_inst_t* i2c)
+int mbot_initialize_fram(i2c_inst_t* i2c)
 {
     // This function is broken, because __get_device_id is broken
     // We can still read and write to mem, just not check on startup that its the right chip
@@ -112,36 +112,36 @@ int rc_initialize_fram(i2c_inst_t* i2c)
     return 0;
 }
 
-int rc_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
+int mbot_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
 {
     int ret = __i2c_fram_read_bytes(i2c, addr, length, data);
     return ret;
 }
 
-int rc_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
+int mbot_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
 {
     int ret = __i2c_fram_write_bytes(i2c, addr, length, data);
     return ret;
 }
 
-int rc_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
+int mbot_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
 {
     int ret = __i2c_fram_read_word(i2c, addr, data);
     return ret;
 }
 
-int rc_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data)
+int mbot_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data)
 {
     int ret = __i2c_fram_write_word(i2c, addr, data);
     return ret;
 }
 
-int rc_erase_fram(i2c_inst_t* i2c)
+int mbot_erase_fram(i2c_inst_t* i2c)
 {   
     int16_t i = 0;
     int ret = 0;
     while((i < MAXADDRESS) & (ret == 0)){
-        ret = rc_write_word_fram(i2c, i, 0x0000);
+        ret = mbot_write_word_fram(i2c, i, 0x0000);
         i++;
     }
     if(ret != 0){

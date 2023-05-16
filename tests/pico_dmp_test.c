@@ -7,7 +7,7 @@
 #include <pico/multicore.h>
 #include <rc/mpu/mpu.h>
 #include <comms/common.h>
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 #define DEBUG
 // data to hold current mpu state
 
