@@ -9,21 +9,24 @@
 #include "hardware/pio.h"
 #include "hardware/timer.h"
 #include <rc/encoder/encoder.h>
-
+#define DELTA "\u0394"
+#define PHI "\u03A6"
+#define THETA "\u0398"
+#define PSI "\u03A8"
 int main() {
     int d1, d2, d3, t1, t2, t3 = 0;
-
     rc_encoder_init();
     sleep_ms(2000);
-    printf("delta1 | delta2 | delta3 | total1 | total2 | total3 |      \n");
+    printf("\033[2J\r");
+    printf("| ENC 0%s | ENC 1%s | ENC 2%s |  ENC 0 |  ENC 1 |  ENC 2 |\n", DELTA, DELTA, DELTA);
     while (1) {
-        d1 = rc_encoder_read_delta(1);
-        d2 = rc_encoder_read_delta(2);
-        d3 = rc_encoder_read_delta(3);
-        t1 = rc_encoder_read_count(1);
-        t2 = rc_encoder_read_count(2);
-        t3 = rc_encoder_read_count(3);
-        printf("\r%7d| %7d| %7d| %7d| %7d| %7d|", d1, d2, d3, t1, t2, t3);
+        d1 = rc_encoder_read_delta(0);
+        d2 = rc_encoder_read_delta(1);
+        d3 = rc_encoder_read_delta(2);
+        t1 = rc_encoder_read_count(0);
+        t2 = rc_encoder_read_count(1);
+        t3 = rc_encoder_read_count(2);
+        printf("\r| %7d| %7d| %7d| %7d| %7d| %7d|", d1, d2, d3, t1, t2, t3);
         sleep_ms(20);
     }
 }

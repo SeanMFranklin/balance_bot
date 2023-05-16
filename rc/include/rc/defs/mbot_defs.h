@@ -1,7 +1,7 @@
 #ifndef RC_DEFS_H
 #define RC_DEFS_H
 
-#define SYS_CLOCK       250000 //system clock in kHz
+#define SYS_CLOCK       125000 //system clock in kHz
 #define PWM_FREQ        25000
 
 #define MAIN_LOOP_HZ            50.0 // Hz of control loop

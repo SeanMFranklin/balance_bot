@@ -30,4 +30,6 @@ void generateTableInt(char* buf, int rows, int cols, const char* title, const ch
  */
 void generateTableFloat(char* buf, int rows, int cols, const char* title, const char* headings[], float data[rows][cols]);
 
+
+void generateBottomLine(char* buf, int cols);
 #endif /* TABLE_GENERATOR_H */

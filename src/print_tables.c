@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-
+#pragma pack(1)
 void generateTableInt(char* buf, int rows, int cols, const char* title, const char* headings[], int data[rows][cols]) {
     char line[256] = {0};
     int title_len = strlen(title);
@@ -36,7 +36,7 @@ void generateTableInt(char* buf, int rows, int cols, const char* title, const ch
     }
 
     // Bottom line
-    sprintf(buf + strlen(buf), "|%s|\n", line);
+    //sprintf(buf + strlen(buf), "|%s|\n", line);
 }
 
 void generateTableFloat(char* buf, int rows, int cols, const char* title, const char* headings[], float data[rows][cols]) {
@@ -73,5 +73,13 @@ void generateTableFloat(char* buf, int rows, int cols, const char* title, const 
     }
 
     // Bottom line
-    sprintf(buf + strlen(buf), "|%s|\n", line);
+    //sprintf(buf + strlen(buf), "|%s|\n", line);
+}
+
+void generateBottomLine(char* buf, int cols) {
+    char line[256] = {0};
+    int line_len = cols * 12;  // Each column is 12 chars wide
+    memset(line, '-', line_len-1);
+    line[line_len] = '\0';
+    sprintf(buf, "|%s|\n", line);
 }

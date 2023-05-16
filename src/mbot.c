@@ -2,11 +2,13 @@
  * This file is the main executable for the MBot firmware.
  */
 #include "mbot.h"
+#include <math.h>
 #include "print_tables.h"
-
+#define THETA "\u0398"
+#pragma pack(1)
 // Global
-uint64_t timestamp_offset = 0;
-uint64_t current_utime = 0;
+static uint64_t timestamp_offset = 0;
+static uint64_t current_utime = 0;
 int drive_mode = 0;
 bool running = false;
 
@@ -33,7 +35,7 @@ void register_topics()
 void timestamp_cb(serial_timestamp_t *msg)
 {
     mbot_received_time.utime = msg->utime;
-    uint64_t current_utime = to_us_since_boot(get_absolute_time());
+    current_utime = to_us_since_boot(get_absolute_time());
     timestamp_offset = mbot_received_time.utime - current_utime;
 }
 
@@ -74,11 +76,13 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
 bool mbot_loop(repeating_timer_t *rt)
 {
     // only run if we've received a timesync message...
-    if (comms_get_topic_data(MBOT_TIMESYNC, &mbot_received_time))
+    //if (comms_get_topic_data(MBOT_TIMESYNC, &mbot_received_time))
+    if(true)
     {
-        uint64_t current_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
+        current_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
         mbot_read_imu(&mbot_imu);
         mbot_read_encoders(&mbot_encoders);
+        //printf("%lld, %lld, %lld \n", mbot_encoders.ticks[0], mbot_encoders.ticks[1], mbot_encoders.ticks[2]);
         mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
         mbot_calculate_mbot_vel(mbot_imu, mbot_motor_vel, &mbot_vel);
         mbot_calculate_odometry(mbot_vel, &mbot_odometry);
@@ -133,12 +137,12 @@ void mbot_read_encoders(serial_mbot_encoders_t* encoders){
     int64_t delta_time = current_utime - encoders->utime;
     encoders->utime = current_utime;
     encoders->delta_time = delta_time;
-    encoders->ticks[0] = rc_encoder_read_count(0);
-    encoders->ticks[1] = rc_encoder_read_count(1);
-    encoders->ticks[2] = rc_encoder_read_count(2);
     encoders->delta_ticks[0] = rc_encoder_read_delta(0);
     encoders->delta_ticks[1] = rc_encoder_read_delta(1);
     encoders->delta_ticks[2] = rc_encoder_read_delta(2);
+    encoders->ticks[0] = rc_encoder_read_count(0);
+    encoders->ticks[1] = rc_encoder_read_count(1);
+    encoders->ticks[2] = rc_encoder_read_count(2);
 }
 
 int mbot_init_pico(void){
@@ -151,12 +155,13 @@ int mbot_init_pico(void){
     }; 
     
     stdio_init_all(); // enable USB serial terminal
+    sleep_ms(500);
     printf("\nMBot Booting Up!\n");
     return 1;
 }
 
 int mbot_init_hardware(void){
-
+    sleep_ms(1000);
     // Initialize Motors
     printf("initializinging motors...\n");
     rc_motor_init();
@@ -181,20 +186,20 @@ int mbot_init_hardware(void){
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     // Initialize the IMU using the Digital Motion Processor
-    printf("Initializing DMP...\n");
-    rc_mpu_config_t mpu_config = rc_mpu_default_config();
-    mpu_config.i2c_bus = i2c;
-    mpu_config.dmp_fetch_accel_gyro = 1;
-    mpu_config.enable_magnetometer = 1;
-    mpu_config.read_mag_after_callback = 0;
-    mpu_config.orient = ORIENTATION_Z_UP;
-    mpu_config.dmp_sample_rate = 200;
+    // printf("Initializing DMP...\n");
+    // rc_mpu_config_t mpu_config = rc_mpu_default_config();
+    // mpu_config.i2c_bus = i2c;
+    // mpu_config.dmp_fetch_accel_gyro = 1;
+    // mpu_config.enable_magnetometer = 0;
+    // mpu_config.read_mag_after_callback = 0;
+    // mpu_config.orient = ORIENTATION_Z_UP;
+    // mpu_config.dmp_sample_rate = 200;
     
     // Calibrate the gyro to eliminate bias, Mbot must be still for this
-    rc_mpu_calibrate_gyro_routine(mpu_config);
-    sleep_ms(500);
-    rc_mpu_initialize_dmp(&mpu_data, mpu_config);
-    gpio_set_irq_enabled_with_callback(rc_MPU_INTERRUPT_GPIO, GPIO_IRQ_EDGE_FALL, true, &rc_dmp_callback);
+    // rc_mpu_calibrate_gyro_routine(mpu_config);
+    // sleep_ms(500);
+    // rc_mpu_initialize_dmp(&mpu_data, mpu_config);
+    // gpio_set_irq_enabled_with_callback(rc_MPU_INTERRUPT_GPIO, GPIO_IRQ_EDGE_FALL, true, &rc_dmp_callback);
 }
 
 int mbot_init_comms(void){
@@ -211,37 +216,35 @@ int mbot_init_comms(void){
     sleep_ms(500);
 }
 
-int mbot_start_timer_loop(void){
-    // run the main loop as a timed interrupt
-    printf("starting the timed interrupt...\r\n");
-    repeating_timer_t loop_timer;
-    add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms
-}
-
 void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, serial_pose2D_t odometry, serial_mbot_motor_vel_t motor_vel){
     printf("\033[2J\r");
+    printf("| TIME: %lld\n", current_utime);
     const char* imu_headings[] = {"ROLL", "PITCH", "YAW"};
     const char* enc_headings[] = {"ENC 0", "ENC 1", "ENC 2"};
-    const char* odom_headings[] = {"X", "Y", "THETA"};
+    const char* odom_headings[] = {"X", "Y", THETA};
     const char* motor_vel_headings[] = {"MOT 0", "MOT 1", "MOT 2"};
-    
+    // we shouldnit need to do this, need to update generateTable to handle different datatypes
+    int encs[3] = {(int)mbot_encoders.ticks[0], (int)mbot_encoders.ticks[1], (int)mbot_encoders.ticks[2]};
     char buf[1024] = {0};
-    generateTableInt(buf, 1, 3, "ENCODERS", enc_headings, encoders.ticks);
-    printf("\r%s\n", buf);
+    generateTableInt(buf, 1, 3, "ENCODERS", enc_headings, encs);
+    printf("\r%s", buf);
     
     buf[0] = '\0';
     generateTableFloat(buf, 1, 3, "IMU", imu_headings, imu.angles_rpy);
-    printf("\r%s\n", buf);
+    printf("\r%s", buf);
     
     buf[0] = '\0';
     generateTableFloat(buf, 1, 3, "MOTOR", motor_vel_headings, motor_vel.velocity);
-    printf("\r%s\n", buf);
+    printf("\r%s", buf);
     
     buf[0] = '\0';
     float odom_array[3] = {odometry.x, odometry.y, odometry.theta};
     generateTableFloat(buf, 1, 3, "ODOMETRY", imu_headings, odom_array);
-    printf("\r%s\n", buf);
+    printf("\r%s", buf);
 
+    buf[0] = '\0';
+    generateBottomLine(buf, 3);
+    printf("\r%s\n", buf);
 }
 
 int main()
@@ -250,10 +253,28 @@ int main()
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
-    mbot_start_timer_loop();
+    printf("Starting MBot Loop...\n\n");
+    repeating_timer_t loop_timer;
+    add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms
     printf("Done Booting Up!\n\n");
     running = true;
+    uint16_t counter = 0;
+    
     while(running){
-        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);   
+        // Heartbeat
+        if(!(counter % 5)){
+            gpio_put(LED_PIN, 1);
+        }
+        else if(!(counter % 7)){
+            gpio_put(LED_PIN, 1);
+            counter = 0;
+        }
+        else{
+            gpio_put(LED_PIN, 0);
+        }
+        // Print State
+        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
+        sleep_ms(100);  
+        counter++;
     }
 }
