@@ -72,6 +72,8 @@ void mbot_vel_cmd_cb(serial_twist2D_t *msg);
 void mbot_motor_vel_cmd_cb(serial_mbot_motor_vel_t *msg);
 void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg);
 bool mbot_loop(repeating_timer_t *rt);
+void mbot_read_encoders(serial_mbot_encoders_t* encoders);
+void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel);
 
 
 #endif

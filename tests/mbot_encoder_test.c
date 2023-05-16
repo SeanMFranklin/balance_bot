@@ -18,16 +18,17 @@ int main() {
     mbot_encoder_init();
     sleep_ms(2000);
     printf("\033[2J\r");
+    printf("|              *** MBot Encoder Test ***              |\n");
     printf("| ENC 0%s | ENC 1%s | ENC 2%s |  ENC 0 |  ENC 1 |  ENC 2 |\n", DELTA, DELTA, DELTA);
     while (1) {
-        d1 = mbot_encoder_read_delta(1);
-        d2 = mbot_encoder_read_delta(2);
-        d3 = mbot_encoder_read_delta(3);
-        t1 = mbot_encoder_read_count(1);
-        t2 = mbot_encoder_read_count(2);
-        t3 = mbot_encoder_read_count(3);
-        printf("\r%7d| %7d| %7d| %7d| %7d| %7d|", d1, d2, d3, t1, t2, t3);
-        sleep_ms(20);
+        d1 = mbot_encoder_read_delta(0);
+        d2 = mbot_encoder_read_delta(1);
+        d3 = mbot_encoder_read_delta(2);
+        t1 = mbot_encoder_read_count(0);
+        t2 = mbot_encoder_read_count(1);
+        t3 = mbot_encoder_read_count(2);
+        printf("\r| %7d| %7d| %7d| %7d| %7d| %7d|", d1, d2, d3, t1, t2, t3);
+        sleep_ms(100);
     }
 }
 

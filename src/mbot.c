@@ -90,11 +90,11 @@ bool mbot_loop(repeating_timer_t *rt)
         mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
         mbot_vel.utime = global_utime;
 
-        if(drive_mode = MODE_MOTOR_VEL){
+        if(drive_mode == MODE_MOTOR_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
         }
-        else if(drive_mode = MODE_MBOT_VEL){
+        else if(drive_mode == MODE_MBOT_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
         }
@@ -129,7 +129,7 @@ bool mbot_loop(repeating_timer_t *rt)
     return true;
 }
 
-mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
+void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
     float conversion = (1.0 / GEAR_RATIO) * (1.0 / ENCODER_RES) * 1E6f * 2.0 * M_PI;
     motor_vel->velocity[0] = (conversion / encoders.delta_time) * encoders.delta_ticks[0];
     motor_vel->velocity[1] = (conversion / encoders.delta_time) * encoders.delta_ticks[1];
@@ -156,7 +156,7 @@ int mbot_init_pico(void){
     bi_decl(bi_program_description("Firmware for the MBot Robot Control Board"));
     
     // set master clock to 250MHz (if unstable set SYS_CLOCK to 125Mhz)
-    if(!set_sys_clock_khz(SYS_CLOCK, true)){
+    if(!set_sys_clock_khz(125000, true)){
         printf("ERROR mbot_init_pico: cannot set system clock\n");
         return -1;
     }; 
@@ -228,7 +228,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("| TIME: %lld\n", global_utime);
     const char* imu_headings[] = {"ROLL", "PITCH", "YAW"};
     const char* enc_headings[] = {"ENC 0", "ENC 1", "ENC 2"};
-    const char* odom_headings[] = {"X", "Y", THETA};
+    const char* odom_headings[] = {"X", "Y", "THETA"};
     const char* motor_vel_headings[] = {"MOT 0", "MOT 1", "MOT 2"};
     // we shouldnit need to do this, need to update generateTable to handle different datatypes
     int encs[3] = {(int)mbot_encoders.ticks[0], (int)mbot_encoders.ticks[1], (int)mbot_encoders.ticks[2]};
@@ -247,7 +247,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     buf[0] = '\0';
     float odom_array[3] = {odometry.x, odometry.y, odometry.theta};
     generateTableFloat(buf, 1, 3, "ODOMETRY", odom_headings, odom_array);
-    printf("\r%s\n", buf);
+    printf("\r%s", buf);
 
     buf[0] = '\0';
     generateBottomLine(buf, 3);
@@ -255,15 +255,16 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
 }
 
 int main()
-{
+{   
+    printf("MBot Firmware Initializing...\n");
     running = false;
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
-    printf("Starting MBot Loop...\n\n");
+    printf("Starting MBot Loop...\n");
     repeating_timer_t loop_timer;
     add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms
-    printf("Done Booting Up!\n\n");
+    printf("Done Booting Up!\n");
     running = true;
     uint16_t counter = 0;
     
