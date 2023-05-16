@@ -112,26 +112,18 @@ int mbot_motor_set(uint8_t ch, int32_t duty) {
 
     bool direction = (duty >= 0);
 
-    uint16_t level = pwm_wrap * (uint16_t) ((direction)? (duty) : (-1 * duty)) / 32768;
+    uint16_t level = pwm_wrap * (uint16_t) ((direction)? (duty) : (-1 * duty));
 
     switch (ch) {
         case 0:
             gpio_put(M0_DIR_PIN, direction);
-            gpio_put(M1_DIR_PIN, direction);
-            gpio_put(M2_DIR_PIN, direction);
             pwm_set_chan_level(M0_SLICE, M0_CHAN, level);
-            pwm_set_chan_level(M1_SLICE, M1_CHAN, level);
-            pwm_set_chan_level(M2_SLICE, M2_CHAN, level);
             break;
         case 1:
-            gpio_put(M0_DIR_PIN, direction);
-            pwm_set_chan_level(M0_SLICE, M0_CHAN, level);
-            break;
-        case 2:
             gpio_put(M1_DIR_PIN, direction);
             pwm_set_chan_level(M1_SLICE, M1_CHAN, level);
             break;
-        case 3:
+        case 2:
             gpio_put(M2_DIR_PIN, direction);
             pwm_set_chan_level(M2_SLICE, M2_CHAN, level);
             break;
@@ -149,17 +141,12 @@ int mbot_motor_free_spin(uint8_t ch) {
     
     switch (ch) {
         case 0:
-            pwm_set_chan_level(M0_SLICE, M0_CHAN, 0);
-            pwm_set_chan_level(M1_SLICE, M1_CHAN, 0);
-            pwm_set_chan_level(M2_SLICE, M2_CHAN, 0);
-            return 0;
-        case 1:
             slice = M0_SLICE; channel = M0_CHAN;
             break;
-        case 2:
+        case 1:
             slice = M1_SLICE; channel = M1_CHAN;
             break;
-        case 3:
+        case 2:
             slice = M2_SLICE; channel = M2_CHAN;
             break;
         default:
@@ -178,20 +165,12 @@ int mbot_motor_brake(uint8_t ch) {
     
     switch (ch) {
         case 0:
-            gpio_put(M0_DIR_PIN, !gpio_get_out_level(M0_DIR_PIN));
-            gpio_put(M1_DIR_PIN, !gpio_get_out_level(M0_DIR_PIN));
-            gpio_put(M2_DIR_PIN, !gpio_get_out_level(M0_DIR_PIN));
-            pwm_set_chan_level(M0_SLICE, M0_CHAN, 0);
-            pwm_set_chan_level(M1_SLICE, M1_CHAN, 0);
-            pwm_set_chan_level(M2_SLICE, M2_CHAN, 0);
-            return 0;
-        case 1:
             slice = M0_SLICE; channel = M0_CHAN; direction = M0_DIR_PIN;
             break;
-        case 2:
+        case 1:
             slice = M1_SLICE; channel = M1_CHAN; direction = M1_DIR_PIN;
             break;
-        case 3:
+        case 2:
             slice = M2_SLICE; channel = M2_CHAN; direction = M2_DIR_PIN;
             break;
         default:

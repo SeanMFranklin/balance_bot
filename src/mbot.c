@@ -6,6 +6,8 @@
 #include "mbot.h"
 #include "odometry.h"
 #include "print_tables.h"
+#include <mbot/defs/mbot_params.h>
+
 #define THETA "\u0398"
 #pragma pack(1)
 // Global
@@ -13,6 +15,7 @@ static uint64_t timestamp_offset = 0;
 static uint64_t global_utime = 0;
 static int drive_mode = 0;
 static bool running = false;
+static mbot_params_t MBot;
 
 void register_topics()
 {
@@ -130,10 +133,10 @@ bool mbot_loop(repeating_timer_t *rt)
 }
 
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
-    float conversion = (1.0 / GEAR_RATIO) * (1.0 / ENCODER_RES) * 1E6f * 2.0 * M_PI;
-    motor_vel->velocity[0] = (conversion / encoders.delta_time) * encoders.delta_ticks[0];
-    motor_vel->velocity[1] = (conversion / encoders.delta_time) * encoders.delta_ticks[1];
-    motor_vel->velocity[2] = (conversion / encoders.delta_time) * encoders.delta_ticks[2];
+    float conversion = (1.0 / MBot.gear_ratio) * (1.0 / MBot.encoder_resolution) * 1E6f * 2.0 * M_PI;
+    motor_vel->velocity[0] = MBot.encoder_polarity[0] * (conversion / encoders.delta_time) * encoders.delta_ticks[0];
+    motor_vel->velocity[1] = MBot.encoder_polarity[1] * (conversion / encoders.delta_time) * encoders.delta_ticks[1];
+    motor_vel->velocity[2] = MBot.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
 }
 
 void mbot_read_imu(serial_mbot_imu_t *imu){
@@ -256,11 +259,19 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
 
 int main()
 {   
-    printf("MBot Firmware Initializing...\n");
     running = false;
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
+    MBot.robot_type = DIFFERENTIAL_DRIVE;
+    MBot.wheel_radius = WHEEL_RADIUS;
+    MBot.wheel_base = WHEEL_BASE;
+    MBot.gear_ratio = GEAR_RATIO;
+    MBot.encoder_resolution = ENCODER_RES;
+    MBot.motor_polarity[0] = 1;
+    MBot.motor_polarity[2] = -1;
+    MBot.encoder_polarity[0] = 1;
+    MBot.encoder_polarity[2] = -1;
     printf("Starting MBot Loop...\n");
     repeating_timer_t loop_timer;
     add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms

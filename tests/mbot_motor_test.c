@@ -1,63 +1,54 @@
+/**
+ *
+ */
+
 #include <stdio.h>
 #include <stdint.h>
-#include <mbot/motor/motor.h>
 #include <pico/stdlib.h>
-#include <hardware/adc.h>
+#include "hardware/pio.h"
+#include "hardware/timer.h"
+#include <mbot/motor/motor.h>
 
 #define INT_16_MAX 32768
 
-void drive_motor_up_down(int);
+void drive_motor_up_down(int motor);
 void blink();
 
+int mbot_init_pico(void){    
+    // set master clock to 250MHz (if unstable set SYS_CLOCK to 125Mhz)
+    if(!set_sys_clock_khz(125000, true)){
+        printf("ERROR mbot_init_pico: cannot set system clock\n");
+        return -1;
+    }; 
+    
+    stdio_init_all(); // enable USB serial terminal
+    sleep_ms(500);
+    printf("\nMBot Booting Up!\n");
+    return 1;
+}
+
 int main() {
+    mbot_init_pico();
+    sleep_ms(2000);
+    printf("\033[2J\r");
+    printf("***MBot Motor Test***\n");
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    
-    adc_init();
-    adc_gpio_init(26);
-    adc_gpio_init(27);
-    adc_gpio_init(28);
-    //adc_select_input(0);
-
-
     mbot_motor_init();
-    blink();
-    printf("Testing motor A...\n");
-    drive_motor_up_down(1);
-    
-    // blink();
-    // printf("Testing motor B...\n");
-    // drive_motor_up_down(2);
-    
-    blink();
-    printf("Testing motor C...\n");
-    drive_motor_up_down(3);
-    
-    // blink();
-    // printf("Testing all motors...\n");
-    // drive_motor_up_down(0);
-    
-    blink();
-    printf("Done!\n");
-    mbot_motor_cleanup();
-    
-    blink();
-
-   /*
-   // Test for max PWM
-    mbot_motor_set(1, INT_16_MAX);
-    sleep_ms(1000);
-    for (int i = INT_16_MAX; i > 0; i -= INT_16_MAX / 64) {
-        mbot_motor_set(1, i);
-        sleep_ms(1);
+    while(1){
+        sleep_ms(2000);
+        blink();
+        printf("Testing motor 0...\n");
+        drive_motor_up_down(0);
+        
+        blink();
+        printf("Testing motor 1...\n");
+        drive_motor_up_down(1);
+        
+        blink();
+        printf("Testing motor 2...\n");
+        drive_motor_up_down(2);
     }
-    mbot_motor_cleanup();
-    int i = 0;
-    while(true)
-    {
-        i += 1;
-    }
-    */
     return 0;
 }
 
