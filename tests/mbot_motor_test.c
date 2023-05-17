@@ -38,7 +38,7 @@ int main() {
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     int freq = 5000;
     int motor = 0;
-    mbot_motor_init_freq(motor, 5000);
+    mbot_motor_init_freq(motor, 10000);
     blink();
     mbot_motor_set_duty(motor, 1.0);
     sleep_ms(2000);

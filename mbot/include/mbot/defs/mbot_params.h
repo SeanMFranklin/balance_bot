@@ -5,7 +5,7 @@
 #define MBOT_OK 0
 
 #define SYS_CLOCK       125000 //system clock in kHz
-#define PWM_FREQ        25000
+#define PWM_FREQ        10000
 #define MAIN_LOOP_HZ            50.0 // Hz of control loop
 #define MAIN_LOOP_PERIOD        (1.0f / MAIN_LOOP_HZ)
 
