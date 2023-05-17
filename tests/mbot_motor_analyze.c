@@ -22,10 +22,12 @@ int main() {
     adc_gpio_init(26);
     adc_gpio_init(27);
     adc_gpio_init(28);
-    mbot_motor_init();
+    mbot_motor_init(0);
+    mbot_motor_init(1);
+    mbot_motor_init(2);
     mbot_encoder_init();
     blink();
-    printf("\nTesting motor 1...\n");
+    printf("\nTesting motor 0...\n");
     int32_t d = 0;
     int encoder_reading;
     float current_reading;
@@ -33,7 +35,7 @@ int main() {
     printf("\nDuty\tSpeed\tCurrent\n");
     adc_select_input(0);
     for (; d < INT_16_MAX; d += INT_16_MAX/NUM_POINTS) {
-        mbot_motor_set(1, d);
+        mbot_motor_set_duty_int16(0, d);
         encoder_reading = -mbot_encoder_read_delta(1);
         wheel_speed = RPM_conversion_factor * encoder_reading;
         current_reading = 0.0;
@@ -43,14 +45,14 @@ int main() {
         printf("%f\t%f\t%f\n", (float)d/(float)INT_16_MAX, wheel_speed, current_reading);
         sleep_ms(1000*TIMESTEP_S);
     }
-    mbot_motor_set(1, 0);
+    mbot_motor_set_duty_int16(0, 0);
     d = 0;
     sleep_ms(3000);
     adc_select_input(2);
-    printf("\nTesting motor 3...\n");
+    printf("\nTesting motor 2...\n");
     printf("\nDuty\tSpeed\tCurrent\n");
     for (; d < INT_16_MAX; d += INT_16_MAX/NUM_POINTS) {
-        mbot_motor_set(3, d);
+        mbot_motor_set_duty_int16(2, d);
         encoder_reading = -mbot_encoder_read_delta(3);
         wheel_speed = RPM_conversion_factor * encoder_reading;
         current_reading = 0.0;
@@ -60,11 +62,14 @@ int main() {
         printf("%f\t%f\t%f\n", (float)d/(float)INT_16_MAX, wheel_speed, current_reading);
         sleep_ms(1000*TIMESTEP_S);
     }
+    mbot_motor_set_duty_int16(2, 0);
     
     blink();
     printf("\nDone!\n");
     
-    mbot_motor_cleanup(); 
+    mbot_motor_cleanup(0); 
+    mbot_motor_cleanup(1); 
+    mbot_motor_cleanup(2);
     blink();
     return 0;
 }

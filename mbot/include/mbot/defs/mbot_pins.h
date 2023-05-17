@@ -2,21 +2,20 @@
 #define MBOT_PIN_DEFS_H
 
 // Motor Pin Definitions
-#define M0_DIR_PIN      14
-#define M1_DIR_PIN      15
-#define M2_DIR_PIN      13
+#define M0_DIR_PIN      14  // PWM 7A
+#define M1_DIR_PIN      15  // PWM 7B
+#define M2_DIR_PIN      13  // PWM 6B
+#define M3_DIR_PIN      20  // PWM 2A
 
-#define M0_PWM_PIN      2
-#define M1_PWM_PIN      3
-#define M2_PWM_PIN      12
+#define M0_PWM_PIN      2   // PWM 1A
+#define M1_PWM_PIN      3   // PWM 1B
+#define M2_PWM_PIN      12  // PWM 6A
+#define M3_PWM_PIN      21  // PWM 2B
 
-// Motor PWM Definitions
-#define M0_SLICE        1
-#define M1_SLICE        1
-#define M2_SLICE        6
-#define M0_CHAN         0 
-#define M1_CHAN         1 
-#define M2_CHAN         0  
+#define SV0_PIN         2
+#define SV1_PIN         3
+#define SV2_PIN         12
+#define SV3_PIN         21
 
 // Motor Pin Definitions
 #define ENC0_A_PIN      6
@@ -29,6 +28,7 @@
 #define ADC0_PIN        26
 #define ADC1_PIN        27
 #define ADC2_PIN        28
+#define ADC3_PIN        29
 
 #define SDA_PIN         4
 #define SCL_PIN         5

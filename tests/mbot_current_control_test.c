@@ -29,7 +29,7 @@ int main() {
     adc_gpio_init(26);
     adc_gpio_init(27);
     adc_gpio_init(28);
-    mbot_motor_init();
+    mbot_motor_init(2);
     mbot_encoder_init();
     sleep_ms(3000);
     float current_offset = 0.0;
@@ -60,7 +60,7 @@ int main() {
                 cmd = rc_filter_march(&cmd_fltr, cmd);
                 //cmd=0.5;
                 printf("%04f | %04f | %04f | %04f\n" , ref_current, i_fltrd, error, cmd);
-                mbot_motor_set(3, (int16_t)(cmd*INT_16_MAX));
+                mbot_motor_set_duty(2, cmd);
                 sleep_ms(1000*CONTROLLER_TIMESTEP);
         }
         ref_current += 0.01;
@@ -68,7 +68,7 @@ int main() {
             break;
         }
     }
-    mbot_motor_set(3, 0);
+    mbot_motor_set_duty(2, 0);
     return 0;
 }
 

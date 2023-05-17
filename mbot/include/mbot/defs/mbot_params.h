@@ -1,6 +1,9 @@
 #ifndef MBOT_PARAM_DEFS_H
 #define MBOT_PARAM_DEFS_H
 
+#define MBOT_ERROR -1
+#define MBOT_OK 0
+
 #define SYS_CLOCK       250000 //system clock in kHz
 #define PWM_FREQ        25000
 #define MAIN_LOOP_HZ            50.0 // Hz of control loop

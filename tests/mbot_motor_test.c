@@ -20,44 +20,29 @@ int main() {
     //adc_select_input(0);
 
 
-    mbot_motor_init();
+    mbot_motor_init(0);
+    mbot_motor_init(1);
+    mbot_motor_init(2);
+
     blink();
-    printf("Testing motor A...\n");
+    printf("Testing motor 0...\n");
     drive_motor_up_down(1);
     
-    // blink();
-    // printf("Testing motor B...\n");
-    // drive_motor_up_down(2);
+    blink();
+    printf("Testing motor 1...\n");
+    drive_motor_up_down(2);
     
     blink();
-    printf("Testing motor C...\n");
+    printf("Testing motor 2...\n");
     drive_motor_up_down(3);
-    
-    // blink();
-    // printf("Testing all motors...\n");
-    // drive_motor_up_down(0);
-    
+
     blink();
     printf("Done!\n");
-    mbot_motor_cleanup();
+    mbot_motor_cleanup(0);
+    mbot_motor_cleanup(1);
+    mbot_motor_cleanup(2);
     
     blink();
-
-   /*
-   // Test for max PWM
-    mbot_motor_set(1, INT_16_MAX);
-    sleep_ms(1000);
-    for (int i = INT_16_MAX; i > 0; i -= INT_16_MAX / 64) {
-        mbot_motor_set(1, i);
-        sleep_ms(1);
-    }
-    mbot_motor_cleanup();
-    int i = 0;
-    while(true)
-    {
-        i += 1;
-    }
-    */
     return 0;
 }
 
@@ -65,20 +50,20 @@ void drive_motor_up_down(int motor) {
     int32_t d = 0;
     printf("\tForward\n");
     for (; d < INT_16_MAX; d += 64) {
-        mbot_motor_set(motor, d);
+        mbot_motor_set_duty_int16(motor, d);
         sleep_ms(4);
     }
     for (; d > 0; d -= 64) {
-        mbot_motor_set(motor, d);
+        mbot_motor_set_duty_int16(motor, d);
         sleep_ms(4);
     }
     printf("\tBackward\n");
     for (; d > -INT_16_MAX; d -= 64) {
-        mbot_motor_set(motor, d);
+        mbot_motor_set_duty_int16(motor, d);
         sleep_ms(4);
     }
     for (; d < 0; d += 64) {
-        mbot_motor_set(motor, d);
+        mbot_motor_set_duty_int16(motor, d);
         sleep_ms(4);
     }
 }

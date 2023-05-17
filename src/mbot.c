@@ -90,11 +90,11 @@ bool mbot_loop(repeating_timer_t *rt)
         mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
         mbot_vel.utime = global_utime;
 
-        if(drive_mode = MODE_MOTOR_VEL){
+        if(drive_mode == MODE_MOTOR_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
         }
-        else if(drive_mode = MODE_MBOT_VEL){
+        else if(drive_mode == MODE_MBOT_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
         }
@@ -107,9 +107,9 @@ bool mbot_loop(repeating_timer_t *rt)
         }
 
         // Set motors
-        mbot_motor_set(0, mbot_motor_pwm_cmd.pwm[0]);
-        mbot_motor_set(1, mbot_motor_pwm_cmd.pwm[1]);
-        mbot_motor_set(2, mbot_motor_pwm_cmd.pwm[2]);
+        mbot_motor_set_duty(0, mbot_motor_pwm_cmd.pwm[0]);
+        mbot_motor_set_duty(1, mbot_motor_pwm_cmd.pwm[1]);
+        mbot_motor_set_duty(2, mbot_motor_pwm_cmd.pwm[2]);
 
         // write the encoders to serial
         comms_write_topic(MBOT_ENCODERS, &mbot_encoders);
@@ -129,7 +129,7 @@ bool mbot_loop(repeating_timer_t *rt)
     return true;
 }
 
-mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
+void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
     float conversion = (1.0 / GEAR_RATIO) * (1.0 / ENCODER_RES) * 1E6f * 2.0 * M_PI;
     motor_vel->velocity[0] = (conversion / encoders.delta_time) * encoders.delta_ticks[0];
     motor_vel->velocity[1] = (conversion / encoders.delta_time) * encoders.delta_ticks[1];
@@ -158,20 +158,22 @@ int mbot_init_pico(void){
     // set master clock to 250MHz (if unstable set SYS_CLOCK to 125Mhz)
     if(!set_sys_clock_khz(SYS_CLOCK, true)){
         printf("ERROR mbot_init_pico: cannot set system clock\n");
-        return -1;
+        return MBOT_ERROR;
     }; 
     
     stdio_init_all(); // enable USB serial terminal
     sleep_ms(500);
     printf("\nMBot Booting Up!\n");
-    return 1;
+    return MBOT_OK;
 }
 
 int mbot_init_hardware(void){
     sleep_ms(1000);
     // Initialize Motors
     printf("initializinging motors...\n");
-    mbot_motor_init();
+    mbot_motor_init(0);
+    mbot_motor_init(1);
+    mbot_motor_init(2);
     printf("initializinging encoders...\n");
     mbot_encoder_init();
 
@@ -207,6 +209,7 @@ int mbot_init_hardware(void){
     // sleep_ms(500);
     // rc_mpu_initialize_dmp(&mpu_data, mpu_config);
     // gpio_set_irq_enabled_with_callback(rc_MPU_INTERRUPT_GPIO, GPIO_IRQ_EDGE_FALL, true, &rc_dmp_callback);
+    return MBOT_OK;
 }
 
 int mbot_init_comms(void){
@@ -221,6 +224,7 @@ int mbot_init_comms(void){
 
     // wait for other core to get rolling
     sleep_ms(500);
+    return MBOT_OK;
 }
 
 void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, serial_pose2D_t odometry, serial_mbot_motor_vel_t motor_vel){
