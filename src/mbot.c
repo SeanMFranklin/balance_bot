@@ -13,6 +13,8 @@
 // Global
 static uint64_t timestamp_offset = 0;
 static uint64_t global_utime = 0;
+static uint64_t global_pico_time = 0;
+static bool global_comms_status = COMMS_ERROR; 
 static int drive_mode = 0;
 static bool running = false;
 static mbot_params_t MBot;
@@ -39,9 +41,9 @@ void register_topics()
 
 void timestamp_cb(serial_timestamp_t *msg)
 {
-    mbot_received_time.utime = msg->utime;
-    global_utime = to_us_since_boot(get_absolute_time());
-    timestamp_offset = mbot_received_time.utime - global_utime;
+    global_pico_time = to_us_since_boot(get_absolute_time());
+    timestamp_offset = msg->utime - global_pico_time;
+    global_comms_status = COMMS_OK;
 }
 
 void reset_encoders_cb(serial_mbot_encoders_t *msg)
@@ -80,19 +82,16 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
 //TODO: this should be tied to the IMU interrupt
 bool mbot_loop(repeating_timer_t *rt)
 {
-    // only run if we've received a timesync message...
-    //if (comms_get_topic_data(MBOT_TIMESYNC, &mbot_received_time))
-    if(true)
+    global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
+    mbot_vel.utime = global_utime;
+    mbot_read_encoders(&mbot_encoders);
+    //mbot_read_imu(&mbot_imu);
+    mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
+    mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[LEFT_MOTOR], mbot_motor_vel.velocity[RIGHT_MOTOR], &mbot_vel);
+    mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
+    // only run if we've got 2 way communication...
+    if (global_comms_status == COMMS_OK)
     {
-        global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
-        //mbot_read_imu(&mbot_imu);
-        mbot_read_encoders(&mbot_encoders);
-        //printf("%lld, %lld, %lld \n", mbot_encoders.ticks[0], mbot_encoders.ticks[1], mbot_encoders.ticks[2]);
-        mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
-        mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[LEFT_MOTOR], mbot_motor_vel.velocity[RIGHT_MOTOR], &mbot_vel);
-        mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
-        mbot_vel.utime = global_utime;
-
         if(drive_mode == MODE_MOTOR_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
@@ -128,6 +127,14 @@ bool mbot_loop(repeating_timer_t *rt)
         // write the PWMs to serial
         comms_write_topic(MBOT_MOTOR_PWM, &mbot_motor_pwm);
         //uint64_t fn_run_len = to_us_since_boot(get_absolute_time()) + timestamp_offset - cur_pico_time;
+    }
+    //check comms and kill motors if its been too long
+    uint64_t timeout = to_us_since_boot(get_absolute_time()) - global_pico_time;
+    if(timeout > MBOT_TIMEOUT_US){
+        mbot_motor_set_duty(0, 0.0);
+        mbot_motor_set_duty(1, 0.0);
+        mbot_motor_set_duty(2, 0.0);
+        global_comms_status = COMMS_ERROR;
     }
 
     return true;
@@ -233,12 +240,17 @@ int mbot_init_comms(void){
 
 void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, serial_pose2D_t odometry, serial_mbot_motor_vel_t motor_vel){
     printf("\033[2J\r");
-    printf("| TIME: %lld\n", global_utime);
+    if(global_comms_status == COMMS_OK){
+        printf("| \033[32m COMMS OK \033[0m TIME: %lld |\n", global_utime);
+    }
+    else{
+        printf("| \033[31m SERIAL COMMUNICATION FAILURE\033[0m     |\n");
+    }
     const char* imu_headings[] = {"ROLL", "PITCH", "YAW"};
     const char* enc_headings[] = {"ENC 0", "ENC 1", "ENC 2"};
     const char* odom_headings[] = {"X", "Y", "THETA"};
     const char* motor_vel_headings[] = {"MOT 0", "MOT 1", "MOT 2"};
-    // we shouldnit need to do this, need to update generateTable to handle different datatypes
+    // we shouldn't need to do this, need to update generateTable to handle different datatypes
     int encs[3] = {(int)mbot_encoders.ticks[0], (int)mbot_encoders.ticks[1], (int)mbot_encoders.ticks[2]};
     char buf[1024] = {0};
     generateTableInt(buf, 1, 3, "ENCODERS", enc_headings, encs);

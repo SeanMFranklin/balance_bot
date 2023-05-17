@@ -3,6 +3,10 @@
 
 #define MBOT_ERROR -1
 #define MBOT_OK 0
+#define COMMS_ERROR 0
+#define COMMS_OK 1
+#define MBOT_TIMEOUT_US 1000000
+
 
 #define SYS_CLOCK       125000 //system clock in kHz
 #define PWM_FREQ        10000

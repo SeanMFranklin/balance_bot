@@ -13,7 +13,7 @@ int mbot_motor_init_freq(uint8_t ch, uint16_t freq) {
     gpio_init(motor_en[ch]);
     gpio_set_function(motor_en[ch], GPIO_FUNC_PWM);
     uint16_t slice = pwm_gpio_to_slice_num(motor_en[ch]);
-    printf("[DEBUG] initializing PWM on slice: %d with freq: %d\n", slice, freq);
+    // printf("[DEBUG] initializing PWM on slice: %d with freq: %d\n", slice, freq);
     // Check if we have already set the frequency for the slice, and if we are trying to change it
     if(slice_frequencies[slice] != 0){
         if (slice_frequencies[slice] != freq) {
@@ -37,7 +37,7 @@ int mbot_motor_init_freq(uint8_t ch, uint16_t freq) {
     pwm_set_clkdiv_int_frac(slice, divider16/16, divider16 & 0xF);
     pwm_set_wrap(slice, pwm_wraps[slice]);
     pwm_set_enabled(slice, true);
-    printf("[DEBUG] roundup: %d, divider16: %d, wrap: %d\n", roundup, divider16, pwm_wraps[slice]);
+    // printf("[DEBUG] roundup: %d, divider16: %d, wrap: %d\n", roundup, divider16, pwm_wraps[slice]);
     int dir_success = gpio_get_dir(motor_en[ch]);
     int pwm_success = (gpio_get_function(motor_en[ch]) == GPIO_FUNC_PWM);
     return (dir_success & pwm_success) ? MBOT_OK : MBOT_ERROR;
@@ -79,6 +79,6 @@ int mbot_motor_set_duty(uint8_t ch, float duty) {
     gpio_put(motor_ph[ch], direction);
     uint16_t pwm_chan = pwm_gpio_to_channel(motor_en[ch]);
     pwm_set_chan_level(slice, pwm_chan, level);
-    printf("[DEBUG] setting pwm slice: %d, channel: %d, level: %d dir: %d\n", slice, pwm_chan, level, direction);
+    // printf("[DEBUG] setting pwm slice: %d, channel: %d, level: %d dir: %d\n", slice, pwm_chan, level, direction);
     return MBOT_OK;
 }
