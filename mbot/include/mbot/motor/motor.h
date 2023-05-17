@@ -57,7 +57,7 @@ int mbot_motor_cleanup(uint8_t ch);
  * @param duty Duty cycle value to set
  * @return int Returns MBOT_OK on success, MBOT_ERROR on failure
  */
-int mbot_motor_set_duty_int16(uint8_t ch, int32_t duty);
+//int mbot_motor_set_duty_int16(uint8_t ch, int32_t duty);
 
 /**
  * @brief Set duty cycle for the motor using a float value
