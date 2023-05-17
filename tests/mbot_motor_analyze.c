@@ -2,12 +2,11 @@
 #include <stdint.h>
 #include <mbot/motor/motor.h>
 #include <mbot/encoder/encoder.h>
+#include <mbot/defs/mbot_params.h>
 #include <pico/stdlib.h>
 #include <hardware/adc.h>
 
 #define INT_16_MAX 32768
-#define ENCODER_RESOLUTION 48.0
-#define GEAR_RATIO 20.4
 #define TIMESTEP_S 1.5
 #define NUM_POINTS 25
 
@@ -15,7 +14,7 @@ void blink();
 
 int main() {
     const float I_conversion_factor = 2 * 3.3f / (1 << 12);
-    const float RPM_conversion_factor = 60.0 / (GEAR_RATIO * TIMESTEP_S * ENCODER_RESOLUTION);
+    const float RPM_conversion_factor = 60.0 / (GEAR_RATIO * TIMESTEP_S * ENCODER_RES);
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     adc_init();

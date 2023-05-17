@@ -67,7 +67,7 @@ void generateTableFloat(char* buf, int rows, int cols, const char* title, const 
     // Data
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            sprintf(buf + strlen(buf), "|  %8.2f ", data[i][j]);
+            sprintf(buf + strlen(buf), "|  %8.4f ", data[i][j]);
         }
         sprintf(buf + strlen(buf), "|\n");
     }

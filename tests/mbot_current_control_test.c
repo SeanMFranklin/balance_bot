@@ -7,8 +7,6 @@
 #include <hardware/adc.h>
 
 #define INT_16_MAX 32000
-#define ENCODER_RESOLUTION 48.0
-#define GEAR_RATIO 20.4
 #define CONTROLLER_TIMESTEP 0.001
 #define CONTROLLER_HZ  1000
 

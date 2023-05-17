@@ -14,7 +14,7 @@
 #define GEAR_RATIO              78.0
 #define ENCODER_RES             20.0 // 40.0 for ROB103 encoders
 
-typedef enum{
+typedef enum robot_type{
     DIFFERENTIAL_DRIVE,
     OMNI_120_DRIVE, // 3 omni wheels spaced 120deg
     ACKERMAN_DRIVE
@@ -23,8 +23,9 @@ typedef enum{
 // MBot Classic Parameters
 #define LEFT_MOTOR              0
 #define RIGHT_MOTOR             2
-#define WHEEL_RADIUS            0.08
-#define WHEEL_BASE              0.15
+#define WHEEL_DIAMETER          0.0837
+#define WHEEL_RADIUS            0.04183
+#define WHEEL_BASE              0.15571
 
 // MBot Omni Parameters
 #define OMNI_BASE_RADIUS        0.10250     // radius of wheel centers
@@ -34,12 +35,14 @@ typedef enum{
 #define OMNI_MOTOR_ANGLE_2 (M_PI / 3.0f)    // Wheel 2 angle in radians (60 degrees)
 #define INV_SQRT3               5.7735026918962575E-1
 
-typedef struct {
+typedef struct mbot_params_t{
     int robot_type;
     float wheel_radius;
-    float encoder_resolution;
+    float wheel_base;
     float gear_ratio;
-    int wheel_base;
-} mbot_params;
+    float encoder_resolution;
+    int motor_polarity[3];
+    int encoder_polarity[3];
+} mbot_params_t;
 
 #endif
