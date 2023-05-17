@@ -94,11 +94,10 @@ bool mbot_loop(repeating_timer_t *rt)
         mbot_vel.utime = global_utime;
 
         if(drive_mode == MODE_MOTOR_VEL){
-        if(drive_mode == MODE_MOTOR_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
         }
-        else if(drive_mode == MODE_MBOT_VEL){
+
         else if(drive_mode == MODE_MBOT_VEL){
             mbot_motor_pwm.utime = global_utime;
             //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
@@ -263,7 +262,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("\r%s\n", buf);
 }
 
-int main()
+void main()
 {   
     running = false;
     mbot_init_pico();
