@@ -1,12 +1,5 @@
 #include <comms/common.h>
 
-// define global structs
-data_pico out_rpi = (data_pico){0};
-data_pico in_pico = (data_pico){0};
-data_rpi out_pico= (data_rpi){0};
-data_rpi in_rpi = (data_rpi){0};
-
-
 // common functions
 uint8_t checksum(uint8_t* addends, int len) {
     //takes in an array and sums the contents then checksums the array

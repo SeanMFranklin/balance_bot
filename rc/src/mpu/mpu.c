@@ -6,10 +6,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include "pico/stdlib.h"
+#include <stdbool.h>
+#include <pico/stdlib.h>
 
 #include <rc/mpu/mpu.h>
-#include <rc/fram/fram.h>
+#include <mbot/fram/fram.h>
 #include <rc/math/vector.h>
 #include <rc/math/matrix.h>
 #include <rc/math/filter.h>
@@ -1976,7 +1977,7 @@ int __load_gyro_calibration(void)
 	int16_t y = 0;
 	int16_t z = 0; //6 bytes
 
-	rc_read_fram(config.i2c_bus, MPU_GYRO_CONFIG_ADDR, 6, &buf[0]);
+	mbot_read_fram(config.i2c_bus, MPU_GYRO_CONFIG_ADDR, 6, &buf[0]);
 	x = (buf[0]<<8) + (buf[1] & 0xFF);
 	y = (buf[2]<<8) + (buf[3] & 0xFF);
 	z = (buf[4]<<8) + (buf[5] & 0xFF);
@@ -2012,7 +2013,7 @@ int rc_print_gyro_calibration(i2c_inst_t* i2c)
 	int16_t y = 0;
 	int16_t z = 0; //6 bytes
 	uint16_t addr = MPU_GYRO_CONFIG_ADDR;
-	rc_read_fram(i2c, addr, 6, &buf[0]);
+	mbot_read_fram(i2c, addr, 6, &buf[0]);
 	x = (buf[0]<<8) + (buf[1] & 0xFF);
 	y = (buf[2]<<8) + (buf[3] & 0xFF);
 	z = (buf[4]<<8) + (buf[5] & 0xFF);
@@ -2031,7 +2032,7 @@ int __load_mag_calibration(void)
 	uint8_t buf[48];
 	double x,y,z,sx,sy,sz; //48 bytes
 
-	rc_read_fram(config.i2c_bus, MPU_MAG_CONFIG_ADDR, 48, &buf[0]);
+	mbot_read_fram(config.i2c_bus, MPU_MAG_CONFIG_ADDR, 48, &buf[0]);
 	memcpy(&x, &buf[0], sizeof(x));
 	memcpy(&y, &buf[8], sizeof(y));
 	memcpy(&z, &buf[16], sizeof(z));
@@ -2065,7 +2066,7 @@ int __load_accel_calibration(void)
 
 	x=0; y=0; z=0;
 	sx=1; sy=1; sz=1;
-	rc_read_fram(config.i2c_bus, MPU_ACCEL_CONFIG_ADDR, 48, buf);
+	mbot_read_fram(config.i2c_bus, MPU_ACCEL_CONFIG_ADDR, 48, buf);
 	memcpy(&x, &buf[0], sizeof(double));
 	memcpy(&y, &buf[8], sizeof(double));
 	memcpy(&z, &buf[16], sizeof(double));
@@ -2145,7 +2146,7 @@ int __write_gyro_cal_to_memory(i2c_inst_t* i2c, int16_t offsets[3])
 	data[3] = (offsets[1])      & 0xFF;
 	data[4] = (offsets[2] >> 8) & 0xFF;
 	data[5] = (offsets[2])      & 0xFF;
-	int ret = rc_write_fram(i2c, MPU_GYRO_CONFIG_ADDR, 6, &data[0]);
+	int ret = mbot_write_fram(i2c, MPU_GYRO_CONFIG_ADDR, 6, &data[0]);
 	return ret;
 }
 
@@ -2163,7 +2164,7 @@ int __write_mag_cal_to_memory(i2c_inst_t* i2c, double offsets[3], double scale[3
 	uint8_t data[48];
 	memcpy(&data[0], offsets, 24);
 	memcpy(&data[24], scale, 24);
-	int ret = rc_write_fram(i2c, MPU_MAG_CONFIG_ADDR, 48, &data[0]);
+	int ret = mbot_write_fram(i2c, MPU_MAG_CONFIG_ADDR, 48, &data[0]);
 	return ret;
 }
 
@@ -2181,7 +2182,7 @@ int __write_accel_cal_to_memory(i2c_inst_t* i2c, double* center, double* lengths
 	uint8_t data[48];
 	memcpy(&data[0], center, 24);
 	memcpy(&data[24], lengths, 24);
-	int ret = rc_write_fram(i2c, MPU_ACCEL_CONFIG_ADDR, 48, data);
+	int ret = mbot_write_fram(i2c, MPU_ACCEL_CONFIG_ADDR, 48, data);
 	return ret;
 }
 

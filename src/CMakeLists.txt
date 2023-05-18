@@ -1,7 +1,12 @@
 #MBOT
 add_executable(mbot
   mbot.c
+  odometry.c
+  print_tables.c
 )
+
+include_directories(/usr/local/include)
+
 target_link_libraries(mbot
   pico_stdlib
   pico_multicore
@@ -10,6 +15,7 @@ target_link_libraries(mbot
   hardware_sync
   hardware_i2c
   hardware_flash
+  mbotlib
   rclib
   comms
 )
