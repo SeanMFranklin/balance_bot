@@ -1517,6 +1517,8 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         /* Check the CRC success*/
         com_rslt = bhy_get_crc_host(&v_crc_host_u32);
         printf("[1518] com_rslt: %d \n", com_rslt);
+        printf("CRC from memory: %d \n", v_crc_from_memory_u32);
+        printf("CRC from host: %d \n", v_crc_host_u32);
         if (v_crc_from_memory_u32 == v_crc_host_u32)
         {
             printf("[1520] CRC Success... \n");
