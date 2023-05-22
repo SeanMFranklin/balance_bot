@@ -61,7 +61,7 @@ int8_t sensor_i2c_read(uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size)
 	}
 
     int bytes_read = i2c_read_blocking(i2c, addr, p_buf, size, false);
-    printf("read %d bytes, expected %d\r\n", bytes_read, size);
+    //printf("read %d bytes, expected %d\r\n", bytes_read, size);
    
     if( bytes_read == PICO_ERROR_GENERIC){
 		return -1;
@@ -204,6 +204,6 @@ int main() {
     while (1){
         sleep_ms(10);
         int status = gpio_get(IMU_INT_PIN);
-        printf("s:%d\n", status);
+        //printf("s:%d\n", status);
     }
 }
