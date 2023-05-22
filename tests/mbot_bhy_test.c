@@ -196,7 +196,8 @@ int main() {
     gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_FALL, true, &bhy_callback);
 
     while (1){
-        sleep_ms(100);
-        printf(".");
+        sleep_ms(10);
+        int status = gpio_get(IMU_INT_PIN);
+        printf("s:%d/n", status);
     }
 }
