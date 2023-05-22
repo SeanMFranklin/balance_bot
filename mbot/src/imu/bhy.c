@@ -1474,10 +1474,14 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
 
         /* set the reset as 0x01*/
         com_rslt = bhy_set_reset_request(BHY_RESET_ENABLE);
+        printf("[1476] com_rslt: %d \n", com_rslt);
         com_rslt += bhy_write_reg(BHY_I2C_REG_CHIP_CONTROL_ADDR, &v_chip_control_u8, BHY_GEN_READ_WRITE_LENGTH);
+        printf("[1478] com_rslt: %d \n", com_rslt);
         /* set the upload data*/
         com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_0_ADDR, &v_upload_addr, BHY_GEN_READ_WRITE_LENGTH);
+        printf("[1481] com_rslt: %d \n", com_rslt);
         com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_1_ADDR, &v_upload_addr, BHY_GEN_READ_WRITE_LENGTH);
+        printf("[1483] com_rslt: %d \n", com_rslt);
         /* write the chip control register as 0x02*/
         write_length = data_to_process / BHY_RAM_WRITE_LENGTH_API;
         read_index_u8 = BHY_INIT_VALUE;
