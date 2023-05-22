@@ -7,6 +7,7 @@
 #include <pico/multicore.h>
 #include <pico/binary_info.h>
 #include <hardware/gpio.h>
+#include <hardware/irq.h>
 
 #include <mbot/imu/bhy_uc_driver.h>
 #include <mbot/imu/bhy_uc_driver_config.h>
@@ -31,7 +32,6 @@
 /********************************************************************************/
 /*                                STATIC VARIABLES                              */
 /********************************************************************************/
-char out_buffer[OUT_BUFFER_SIZE] = " W: 0.999  X: 0.999  Y: 0.999  Z: 0.999   \r";
 uint8_t fifo[FIFO_SIZE];
 static i2c_inst_t *i2c;
 
@@ -98,7 +98,7 @@ static void sensors_callback_rotation_vector(bhy_data_generic_t * sensor_data, b
     );
 }
 
-int bhy_callback(){
+int bhy_callback(void){
     /* BHY Variable*/
         uint8_t                    *fifoptr           = NULL;
         uint8_t                    bytes_left_in_fifo = 0;
@@ -191,6 +191,12 @@ int main() {
     if(bhy_install_sensor_callback(VS_TYPE_ROTATION_VECTOR, VS_WAKEUP, sensors_callback_rotation_vector))
     {
         printf("Failed to install sensor callback\n");
+    }
+
+    /* enables the virtual sensor */
+    if(bhy_enable_virtual_sensor(VS_TYPE_ROTATION_VECTOR, VS_WAKEUP, ROTATION_VECTOR_SAMPLE_RATE, 0, VS_FLUSH_NONE, 0, 0))
+    {
+        DEBUG("Fail to enable sensor id=%d\n", VS_TYPE_ROTATION_VECTOR);
     }
 
     gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_FALL, true, &bhy_callback);
