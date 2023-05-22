@@ -198,6 +198,6 @@ int main() {
     while (1){
         sleep_ms(10);
         int status = gpio_get(IMU_INT_PIN);
-        printf("s:%d/n", status);
+        printf("s:%d\n", status);
     }
 }
