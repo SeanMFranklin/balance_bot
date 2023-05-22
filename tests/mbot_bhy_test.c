@@ -118,12 +118,6 @@ int bhy_callback(){
         {
             /* this function will call callbacks that are registered */
             result = bhy_parse_next_fifo_packet(&fifoptr, &bytes_read, &fifo_packet, &packet_type);
-
-            /* prints all the debug packets */
-            if (packet_type == BHY_DATA_TYPE_DEBUG)
-            {
-                bhy_print_debug_packet(&fifo_packet.data_debug, bhy_printf);
-            }
             
             /* the logic here is that if doing a partial parsing of the fifo, then we should not parse  */
             /* the last 18 bytes (max length of a packet) so that we don't try to parse an incomplete   */
