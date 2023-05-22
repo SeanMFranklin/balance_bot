@@ -1509,26 +1509,30 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
 
 				if(packet_length != 0)
                     com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_DATA_ADDR,data_byte,packet_length * BHY_RAM_WRITE_LENGTH);
-
+                    printf("[1511] com_rslt: %d \n", com_rslt);
                 write_data = write_data + (packet_length * BHY_RAM_WRITE_LENGTH);
             }
         }
 
         /* Check the CRC success*/
         com_rslt = bhy_get_crc_host(&v_crc_host_u32);
+        printf("[1518] com_rslt: %d \n", com_rslt);
         if (v_crc_from_memory_u32 == v_crc_host_u32)
         {
+            printf("[1520] CRC Success... \n");
             com_rslt = BHY_SUCCESS;
         }
         else
         {
             com_rslt = BHY_CRC_ERROR;
+            printf("[1527] CRC Error... \n");
             goto bhy_init_from_rom_return;
         }
         /* disable upload mode*/
         v_chip_control_u8 = BHY_CHIP_CTRL_ENABLE_2;
         /* write the chip control register as 0x02*/
         com_rslt += bhy_write_reg(BHY_I2C_REG_CHIP_CONTROL_ADDR,&v_chip_control_u8, BHY_GEN_READ_WRITE_LENGTH);
+        printf("[1534] com_rslt: %d \n", com_rslt);
     }
 bhy_init_from_rom_return:
     return com_rslt;
