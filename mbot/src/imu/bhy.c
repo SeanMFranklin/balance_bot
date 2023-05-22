@@ -1461,10 +1461,10 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
             goto bhy_init_from_rom_return;
         }
         /* read the CRC data from memory */
-        v_crc_from_memory_u32 = (uint32_t)
-        (((uint32_t)data_from_mem[BHY_CRC_HOST_FILE_MSB]
+        v_crc_from_memory_u32 = (u32)
+        (((u32)data_from_mem[BHY_CRC_HOST_FILE_MSB]
         << BHY_SHIFT_BIT_POSITION_BY_24_BITS) |
-        ((uint32_t)data_from_mem[BHY_CRC_HOST_FILE_XXLSB]
+        ((u32)data_from_mem[BHY_CRC_HOST_FILE_XXLSB]
         << BHY_SHIFT_BIT_POSITION_BY_16_BITS)
         |(data_from_mem[BHY_CRC_HOST_FILE_XLSB]
         << BHY_SHIFT_BIT_POSITION_BY_08_BITS)
@@ -1517,8 +1517,8 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         /* Check the CRC success*/
         com_rslt = bhy_get_crc_host(&v_crc_host_u32);
         printf("[1518] com_rslt: %d \n", com_rslt);
-        printf("CRC from memory: %d \n", v_crc_from_memory_u32);
-        printf("CRC from host: %d \n", v_crc_host_u32);
+        printf("CRC from memory: %u \n", v_crc_from_memory_u32);
+        printf("CRC from host: %u \n", v_crc_host_u32);
         if (v_crc_from_memory_u32 == v_crc_host_u32)
         {
             printf("[1520] CRC Success... \n");
