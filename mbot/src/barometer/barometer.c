@@ -2,9 +2,9 @@
  *  @brief Example shows basic application of configuring and reading pressure.
  */
 
-#include "stdio.h"
+#include <stdio.h>
 #include <inttypes.h>
-#include "bmp280.h"
+#include <mbot/barometer/bmp280.h>
 #include <hardware/i2c.h>
 #include <pico/stdlib.h>
 

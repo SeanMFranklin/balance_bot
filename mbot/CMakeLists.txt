@@ -5,7 +5,9 @@ add_library(mbotlib STATIC
   src/encoder/encoder.c
   # FRAM chip
   src/fram/fram.c
-  # IMU
+  # BOSCH IMU
+  src/imu/bhy_support.c
+  src/imu/bhy_uc_driver.c
   src/imu/bhy.c
   # BAROMETER
   src/barometer/barometer.c

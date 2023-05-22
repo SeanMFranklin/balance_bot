@@ -52,7 +52,7 @@
 **************************************************************************/
 /*! file <BHY >
     brief <Sensor driver for BHY> */
-#include "bhy.h"
+#include <mbot/imu/bhy.h>
 /* static structure for bhy */
 static struct bhy_t *p_bhy;
 /* contain the saved parameters data*/

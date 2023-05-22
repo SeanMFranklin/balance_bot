@@ -53,11 +53,11 @@
 /********************************************************************************/
 /*                                  HEADER FILES                                */
 /********************************************************************************/
-#include "bhy_support.h"
-#include "bhy_uc_driver_config.h"
+#include <mbot/imu/bhy_support.h>
+#include <mbot/imu/bhy_uc_driver_config.h>
 
-#include "FreeRTOS.h"
-#include "task.h"
+//#include "FreeRTOS.h"
+//#include "task.h"
 
 /********************************************************************************/
 /*                                STATIC VARIABLES                              */
@@ -114,7 +114,7 @@ int8_t bhy_initialize_support(void)
 */
 void bhy_delay_msec(uint32_t msec)
 {
-    vTaskDelay(msec);
+    sleep_ms(msec); // use picoSDK sleep
 }
 /*!
  * @brief provides a print function to the bhy driver on DD2.0 platform

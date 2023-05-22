@@ -78,6 +78,19 @@ pico_enable_stdio_usb(mbot_fram_test 1)
 pico_enable_stdio_uart(mbot_fram_test 0)
 pico_add_extra_outputs(mbot_fram_test)
 
+#BHY-TEST
+add_executable(mbot_bhy_test
+  mbot_bhy_test.c
+)
+target_link_libraries(mbot_bhy_test
+  pico_stdlib
+  hardware_i2c
+  rclib
+)
+pico_enable_stdio_usb(mbot_bhy_test 1)
+pico_enable_stdio_uart(mbot_bhy_test 0)
+pico_add_extra_outputs(mbot_bhy_test)
+
 #MOTOR-TEST
 add_executable(mbot_motor_test
   mbot_motor_test.c
