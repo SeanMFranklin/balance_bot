@@ -52,6 +52,7 @@
 **************************************************************************/
 /*! file <BHY >
     brief <Sensor driver for BHY> */
+#include <pico/stdlib.h> // for printf debugging
 #include <mbot/imu/bhy.h>
 /* static structure for bhy */
 static struct bhy_t *p_bhy;
@@ -1413,6 +1414,7 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         if ((data_from_mem[BHY_SIGNATURE_1] == BHY_IMAGE_SIGNATURE1)
         && (data_from_mem[BHY_SIGNATURE_2] == BHY_IMAGE_SIGNATURE2))
         {
+            printf("[1413] signature verified... \n");
             com_rslt = BHY_SUCCESS;
         }
         else
@@ -1428,10 +1430,12 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         {
             if(BHY_ROM_VERSION_DI01 == rom_version)
             {
+                printf("[1431] ROM version verified... \n");
                 com_rslt = BHY_SUCCESS;
             }
             else
             {
+                printf("[1436] ROM version mismatch... \n");
                 com_rslt = BHY_RAMPATCH_NOT_MATCH;
                 goto bhy_init_from_rom_return;
             }
@@ -1440,16 +1444,19 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         {
             if(BHY_ROM_VERSION_DI03 == rom_version)
             {
+                printf("[1445] ROM version verified... \n");
                 com_rslt = BHY_SUCCESS;
             }
             else
             {
+                printf("[1450] ROM version mismatch... \n");
                 com_rslt = BHY_RAMPATCH_NOT_MATCH;
                 goto bhy_init_from_rom_return;
             }
         }
         else
         {
+            printf("[1457] RAM patch not supported... \n");
             com_rslt = BHY_RAMPATCH_NOT_SUPPORT;
             goto bhy_init_from_rom_return;
         }

@@ -88,15 +88,15 @@ int main() {
     printf("got initialization result: %d\r\n", init_result);
 
     int ii=0;
-    printf("   TB_X  |");
-    printf("   TB_Y  |");
-    printf("   TB_Z  |");
-    printf("   A_X   |");
-    printf("   A_Y   |");
-    printf("   A_Z   |");
-    printf("   G_X   |");
-    printf("   G_Y   |");
-    printf("   G_Z   |");
+    // printf("   TB_X  |");
+    // printf("   TB_Y  |");
+    // printf("   TB_Z  |");
+    // printf("   A_X   |");
+    // printf("   A_Y   |");
+    // printf("   A_Z   |");
+    // printf("   G_X   |");
+    // printf("   G_Y   |");
+    // printf("   G_Z   |");
     printf("  COUNT  |");
     printf("\r\n");
     while (1) {
