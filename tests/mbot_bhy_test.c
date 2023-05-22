@@ -159,7 +159,7 @@ int main() {
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 
     gpio_set_function(IMU_INT_PIN,GPIO_IN);
-    gpio_pull_up(IMU_INT_PIN);
+    gpio_pull_down(IMU_INT_PIN);
 
 
     
