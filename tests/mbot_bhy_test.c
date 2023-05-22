@@ -46,11 +46,14 @@ int8_t sensor_i2c_read(uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size)
 
     int bytes_read = i2c_read_blocking(i2c, addr, p_buf, size, false);
     printf("read %d bytes, expected %d\r\n", bytes_read, size);
+   
     if( bytes_read == PICO_ERROR_GENERIC){
 		return -1;
 	}
-
-	return bytes_read;
+    else if(bytes_read != size){
+        return -1;
+    }
+	return 0;
 }
 
 // implementation of extern function in bosch IMU code
