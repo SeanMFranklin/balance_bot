@@ -199,11 +199,16 @@ int main() {
         DEBUG("Fail to enable sensor id=%d\n", VS_TYPE_ROTATION_VECTOR);
     }
 
+    // VS_TYPE_ACCELEROMETER
+    // VS_TYPE_LINEAR_ACCELERATION
+    // VS_TYPE_GYROSCOPE
+    // VS_TYPE
+
     gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_FALL, true, &bhy_callback);
 
     while (1){
         sleep_ms(10);
         int status = gpio_get(IMU_INT_PIN);
-        //printf("s:%d\n", status);
+        printf("s:%d\n", status);
     }
 }
