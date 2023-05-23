@@ -204,7 +204,7 @@ int main() {
     // VS_TYPE_GYROSCOPE
     // VS_TYPE
 
-    gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_FALL, true, &bhy_callback);
+    gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_RISE, true, &bhy_callback);
 
     while (1){
         sleep_ms(10);
