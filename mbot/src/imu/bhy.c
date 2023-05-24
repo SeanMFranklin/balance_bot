@@ -54,6 +54,7 @@
     brief <Sensor driver for BHY> */
 #include <pico/stdlib.h> // for printf debugging
 #include <mbot/imu/bhy.h>
+#include <stdio.h>
 /* static structure for bhy */
 static struct bhy_t *p_bhy;
 /* contain the saved parameters data*/
@@ -1177,6 +1178,7 @@ BHY_RETURN_FUNCTION_TYPE bhy_get_crc_host(u32 *v_crc_host_u32)
             p_bhy->BHY_BUS_READ_FUNC(p_bhy->device_addr,
             BHY_I2C_REG_CRC_HOST_ADDR,
             a_data_u8, BHY_CRC_HOST_LENGTH);
+
             *v_crc_host_u32 = (u32)
             (((u32)a_data_u8[BHY_CRC_HOST_MSB]
             << BHY_SHIFT_BIT_POSITION_BY_24_BITS) |
@@ -1414,7 +1416,7 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         if ((data_from_mem[BHY_SIGNATURE_1] == BHY_IMAGE_SIGNATURE1)
         && (data_from_mem[BHY_SIGNATURE_2] == BHY_IMAGE_SIGNATURE2))
         {
-            printf("[1413] signature verified... \n");
+            //printf("[1413] signature verified... \n");
             com_rslt = BHY_SUCCESS;
         }
         else
@@ -1430,12 +1432,12 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         {
             if(BHY_ROM_VERSION_DI01 == rom_version)
             {
-                printf("[1431] ROM version verified... \n");
+                //printf("[1431] ROM version verified... \n");
                 com_rslt = BHY_SUCCESS;
             }
             else
             {
-                printf("[1436] ROM version mismatch... \n");
+                //printf("[1436] ROM version mismatch... \n");
                 com_rslt = BHY_RAMPATCH_NOT_MATCH;
                 goto bhy_init_from_rom_return;
             }
@@ -1444,19 +1446,19 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         {
             if(BHY_ROM_VERSION_DI03 == rom_version)
             {
-                printf("[1445] ROM version verified... \n");
+                //printf("[1445] ROM version verified... \n");
                 com_rslt = BHY_SUCCESS;
             }
             else
             {
-                printf("[1450] ROM version mismatch... \n");
+                //printf("[1450] ROM version mismatch... \n");
                 com_rslt = BHY_RAMPATCH_NOT_MATCH;
                 goto bhy_init_from_rom_return;
             }
         }
         else
         {
-            printf("[1457] RAM patch not supported... \n");
+            //printf("[1457] RAM patch not supported... \n");
             com_rslt = BHY_RAMPATCH_NOT_SUPPORT;
             goto bhy_init_from_rom_return;
         }
@@ -1471,17 +1473,25 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
         | (data_from_mem[BHY_CRC_HOST_FILE_LSB]));
         /* Remove the first 16 bytes*/
         data_to_process = v_file_length_u32 - BHY_SIGNATURE_LENGTH;
-
+        
+        //uint8_t cc = 0xFF;
+        //bhy_get_chip_control(&cc);
+        //printf("CC Before Reset: %d\n", cc); // should be 0 or whatever
+        
         /* set the reset as 0x01*/
         com_rslt = bhy_set_reset_request(BHY_RESET_ENABLE);
-        printf("[1476] com_rslt: %d \n", com_rslt);
-        com_rslt += bhy_write_reg(BHY_I2C_REG_CHIP_CONTROL_ADDR, &v_chip_control_u8, BHY_GEN_READ_WRITE_LENGTH);
-        printf("[1478] com_rslt: %d \n", com_rslt);
+        sleep_ms(100);
+
+        //printf("[1476] com_rslt: %d \n", com_rslt);
+        bhy_write_reg(BHY_I2C_REG_CHIP_CONTROL_ADDR, &v_chip_control_u8, BHY_GEN_READ_WRITE_LENGTH);
+        //bhy_get_chip_control(&cc);
+        //printf("CC After Reset: %d\n", cc); // Should be 2, getting 0
         /* set the upload data*/
+
         com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_0_ADDR, &v_upload_addr, BHY_GEN_READ_WRITE_LENGTH);
-        printf("[1481] com_rslt: %d \n", com_rslt);
+        //printf("[1481] com_rslt: %d \n", com_rslt);
         com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_1_ADDR, &v_upload_addr, BHY_GEN_READ_WRITE_LENGTH);
-        printf("[1483] com_rslt: %d \n", com_rslt);
+        //printf("[1483] com_rslt: %d \n", com_rslt);
         /* write the chip control register as 0x02*/
         write_length = data_to_process / BHY_RAM_WRITE_LENGTH_API;
         read_index_u8 = BHY_INIT_VALUE;
@@ -1509,19 +1519,19 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
 
 				if(packet_length != 0)
                     com_rslt += bhy_write_reg(BHY_I2C_REG_UPLOAD_DATA_ADDR,data_byte,packet_length * BHY_RAM_WRITE_LENGTH);
-                    printf("[1511] com_rslt: %d \n", com_rslt);
+                    //printf("[1511] com_rslt: %d \n", com_rslt);
                 write_data = write_data + (packet_length * BHY_RAM_WRITE_LENGTH);
             }
         }
 
         /* Check the CRC success*/
         com_rslt = bhy_get_crc_host(&v_crc_host_u32);
-        printf("[1518] com_rslt: %d \n", com_rslt);
-        printf("CRC from memory: %u \n", v_crc_from_memory_u32);
-        printf("CRC from host: %u \n", v_crc_host_u32);
+        //printf("[1518] com_rslt: %d \n", com_rslt);
+        //printf("CRC from memory: %x \n", v_crc_from_memory_u32);
+        //printf("CRC from host: %x \n", v_crc_host_u32);
         if (v_crc_from_memory_u32 == v_crc_host_u32)
         {
-            printf("[1520] CRC Success... \n");
+            //printf("[1520] CRC Success... \n");
             com_rslt = BHY_SUCCESS;
         }
         else
@@ -1529,13 +1539,13 @@ BHY_RETURN_FUNCTION_TYPE bhy_initialize_from_rom( const u8 *memory, const u32 v_
             //com_rslt = BHY_SUCCESS;
             com_rslt = BHY_CRC_ERROR;
             printf("[1527] CRC Error... \n");
-            goto bhy_init_from_rom_return;
+            //goto bhy_init_from_rom_return;
         }
         /* disable upload mode*/
         v_chip_control_u8 = BHY_CHIP_CTRL_ENABLE_2;
         /* write the chip control register as 0x02*/
         com_rslt += bhy_write_reg(BHY_I2C_REG_CHIP_CONTROL_ADDR,&v_chip_control_u8, BHY_GEN_READ_WRITE_LENGTH);
-        printf("[1534] com_rslt: %d \n", com_rslt);
+        //printf("[1534] com_rslt: %d \n", com_rslt);
     }
 bhy_init_from_rom_return:
     return com_rslt;

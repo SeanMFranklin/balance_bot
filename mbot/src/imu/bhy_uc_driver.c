@@ -153,7 +153,6 @@ BHY_RETURN_FUNCTION_TYPE bhy_driver_init(const uint8_t *bhy_fw_data)
     int8_t   init_retry_count         = BHY_INIT_RETRY_COUNT;
     BHY_RETURN_FUNCTION_TYPE result   = BHY_SUCCESS;
 
-    /* get fw length */
     tmp_fw_len = 16 + bhy_fw_data[12] + (256 * bhy_fw_data[13]);
 
     /* retry BHY_INIT_RETRY_COUNT times to avoid firmware download fail*/
@@ -162,7 +161,7 @@ BHY_RETURN_FUNCTION_TYPE bhy_driver_init(const uint8_t *bhy_fw_data)
         bhy_initialize_support();
 
         /* downloads the ram patch to the bhy */
-        result += bhy_initialize_from_rom(bhy_fw_data, /*bhy_fw_len*/tmp_fw_len);
+        result += bhy_initialize_from_rom(bhy_fw_data, tmp_fw_len);
 
         if (result == BHY_SUCCESS)
         {
@@ -839,6 +838,7 @@ BHY_RETURN_FUNCTION_TYPE bhy_update_system_timestamp(bhy_data_scalar_u16_t *time
         default:
             return BHY_OUT_OF_RANGE;
     }
+    return BHY_SUCCESS;
 }
 
 /*!

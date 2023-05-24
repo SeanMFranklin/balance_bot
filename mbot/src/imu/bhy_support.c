@@ -55,7 +55,8 @@
 /********************************************************************************/
 #include <mbot/imu/bhy_support.h>
 #include <mbot/imu/bhy_uc_driver_config.h>
-
+#include <pico/stdio.h>
+#include <stdio.h>
 //#include "FreeRTOS.h"
 //#include "task.h"
 
@@ -121,7 +122,8 @@ void bhy_delay_msec(uint32_t msec)
  */
 void bhy_printf(const u8 * string)
 {
-    trace_log("%s",string);
+    printf("%s",string);
+    //trace_log("%s",string);
 }
 /*!
  * @brief provides the mcu reference code version

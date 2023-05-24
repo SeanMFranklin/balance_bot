@@ -153,3 +153,18 @@ target_link_libraries(mbot_encoder_test
 pico_enable_stdio_usb(mbot_encoder_test 1)
 pico_enable_stdio_uart(mbot_encoder_test 0)
 pico_add_extra_outputs(mbot_encoder_test)
+
+#Encoder tests
+add_executable(pico_interrupt_test
+pico_interrupt_test.c
+)
+target_link_libraries(pico_interrupt_test
+  pico_stdlib
+  pico_multicore
+  hardware_pio
+  hardware_pwm
+  rclib
+)
+pico_enable_stdio_usb(pico_interrupt_test 1)
+pico_enable_stdio_uart(pico_interrupt_test 0)
+pico_add_extra_outputs(pico_interrupt_test)
