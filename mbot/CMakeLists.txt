@@ -9,6 +9,7 @@ add_library(mbotlib STATIC
   src/imu/bhy_support.c
   src/imu/bhy_uc_driver.c
   src/imu/bhy.c
+  src/imu/imu.c
   # BAROMETER
   src/barometer/barometer.c
   # DEFS

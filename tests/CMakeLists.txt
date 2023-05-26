@@ -154,7 +154,7 @@ pico_enable_stdio_usb(mbot_encoder_test 1)
 pico_enable_stdio_uart(mbot_encoder_test 0)
 pico_add_extra_outputs(mbot_encoder_test)
 
-#Encoder tests
+#interrupt test
 add_executable(pico_interrupt_test
 pico_interrupt_test.c
 )
@@ -168,3 +168,16 @@ target_link_libraries(pico_interrupt_test
 pico_enable_stdio_usb(pico_interrupt_test 1)
 pico_enable_stdio_uart(pico_interrupt_test 0)
 pico_add_extra_outputs(pico_interrupt_test)
+
+#IMU test
+add_executable(mbot_imu_test
+  mbot_imu_test.c
+)
+target_link_libraries(mbot_imu_test
+  pico_stdlib
+  hardware_i2c
+  rclib
+)
+pico_enable_stdio_usb(mbot_imu_test 1)
+pico_enable_stdio_uart(mbot_imu_test 0)
+pico_add_extra_outputs(mbot_imu_test)
