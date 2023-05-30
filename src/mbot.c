@@ -8,6 +8,7 @@
 #include "print_tables.h"
 #include <mbot/defs/mbot_params.h>
 
+
 #define THETA "\u0398"
 #pragma pack(1)
 // Global
@@ -18,6 +19,10 @@ static bool global_comms_status = COMMS_ERROR;
 static int drive_mode = 0;
 static bool running = false;
 static mbot_params_t MBot;
+
+mbot_bhy_data_t mbot_imu_data;
+mbot_bhy_config_t mbot_imu_config;
+
 
 void register_topics()
 {
@@ -79,13 +84,13 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
     drive_mode = MODE_MOTOR_PWM;
 }
 
-//TODO: this should be tied to the IMU interrupt
+//TODO: this could be tied to the IMU interrupt
 bool mbot_loop(repeating_timer_t *rt)
 {
     global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
     mbot_vel.utime = global_utime;
     mbot_read_encoders(&mbot_encoders);
-    //mbot_read_imu(&mbot_imu);
+    mbot_read_imu(&mbot_imu);
     mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
     mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[LEFT_MOTOR], mbot_motor_vel.velocity[RIGHT_MOTOR], &mbot_vel);
     mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
@@ -147,8 +152,34 @@ void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor
     motor_vel->velocity[2] = MBot.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
 }
 
+// typedef struct __attribute__((__packed__)) serial_mbot_imu_t {
+//     int64_t utime;
+//     float gyro[3];
+//     float accel[3];
+//     float mag[3];
+//     float angles_rpy[3]; // roll (x), pitch (y), yaw, (z)
+//     float angles_quat[4]; // quaternion
+//     float temp;
+// } serial_mbot_imu_t;
+
 void mbot_read_imu(serial_mbot_imu_t *imu){
-    // nothing here yet
+    imu->utime = global_utime;
+    imu->gyro[0] = mbot_imu_data.gyro[0];
+    imu->gyro[1] = mbot_imu_data.gyro[1];
+    imu->gyro[2] = mbot_imu_data.gyro[2];
+    imu->accel[0] = mbot_imu_data.accel[0];
+    imu->accel[1] = mbot_imu_data.accel[1];
+    imu->accel[2] = mbot_imu_data.accel[2];
+    imu->mag[0] = mbot_imu_data.mag[0];
+    imu->mag[1] = mbot_imu_data.mag[1];
+    imu->mag[2] = mbot_imu_data.mag[2];
+    imu->angles_rpy[0] = mbot_imu_data.rpy[0];
+    imu->angles_rpy[1] = mbot_imu_data.rpy[1];
+    imu->angles_rpy[2] = mbot_imu_data.rpy[2];
+    imu->angles_quat[0] = mbot_imu_data.quat[0];
+    imu->angles_quat[1] = mbot_imu_data.quat[1];
+    imu->angles_quat[2] = mbot_imu_data.quat[2];
+    imu->angles_quat[3] = mbot_imu_data.quat[3];   
 }
 
 void mbot_read_encoders(serial_mbot_encoders_t* encoders){
@@ -205,21 +236,10 @@ int mbot_init_hardware(void){
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
+    mbot_imu_config = mbot_imu_default_config();
     // Initialize the IMU using the Digital Motion Processor
-    // printf("Initializing DMP...\n");
-    // rc_mpu_config_t mpu_config = rc_mpu_default_config();
-    // mpu_config.i2c_bus = i2c;
-    // mpu_config.dmp_fetch_accel_gyro = 1;
-    // mpu_config.enable_magnetometer = 0;
-    // mpu_config.read_mag_after_callback = 0;
-    // mpu_config.orient = ORIENTATION_Z_UP;
-    // mpu_config.dmp_sample_rate = 200;
-    
-    // Calibrate the gyro to eliminate bias, Mbot must be still for this
-    // rc_mpu_calibrate_gyro_routine(mpu_config);
-    // sleep_ms(500);
-    // rc_mpu_initialize_dmp(&mpu_data, mpu_config);
-    // gpio_set_irq_enabled_with_callback(rc_MPU_INTERRUPT_GPIO, GPIO_IRQ_EDGE_FALL, true, &rc_dmp_callback);
+    printf("Initializing IMU...\n");
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     return MBOT_OK;
 }
 
@@ -274,7 +294,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("\r%s\n", buf);
 }
 
-void main()
+int main()
 {   
     running = false;
     mbot_init_pico();

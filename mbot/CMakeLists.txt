@@ -5,11 +5,16 @@ add_library(mbotlib STATIC
   src/encoder/encoder.c
   # FRAM chip
   src/fram/fram.c
+  # BOSCH IMU
+  src/imu/bhy_support.c
+  src/imu/bhy_uc_driver.c
+  src/imu/bhy.c
+  src/imu/imu.c
+  # BAROMETER
+  src/barometer/barometer.c
   # DEFS
   src/defs/mbot_defs.c
 )
-
-
 
 target_link_libraries(mbotlib
 pico_stdlib

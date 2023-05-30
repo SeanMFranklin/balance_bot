@@ -33,6 +33,8 @@
 #define SDA_PIN         4
 #define SCL_PIN         5
 
+#define IMU_INT_PIN     22
+
 // LED on the Pico
 #define LED_PIN        25
 
