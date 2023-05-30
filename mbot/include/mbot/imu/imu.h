@@ -7,6 +7,9 @@
  * 
  */
 
+#ifndef __MBOT_IMU_H__
+#define __MBOT_IMU_H__
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -21,7 +24,6 @@
 #include <mbot/imu/bhy_uc_driver_constants.h>
 #include <mbot/imu/bhy.h>
 #include <mbot/imu/bhy_support.h>
-#include <mbot/imu/firmware/BHI160B_fw.h>
 
 #define ACCEL_2_MS2     -0.001209716796875
 #define GYRO_2_RADS     6.651407210344245e-05
@@ -33,12 +35,12 @@
 #define MAX_PACKET_LENGTH              18
 #define OUT_BUFFER_SIZE                60
 
-uint8_t fifo[FIFO_SIZE];
-static i2c_inst_t *i2c;
-uint8_t *fifoptr = NULL;
-uint8_t bytes_left_in_fifo = 0;
-uint16_t bytes_remaining = 0;
-uint16_t bytes_read = 0;
+// uint8_t fifo[FIFO_SIZE];
+// static i2c_inst_t *i2c;
+// uint8_t *fifoptr = NULL;
+// uint8_t bytes_left_in_fifo = 0;
+// uint16_t bytes_remaining = 0;
+// uint16_t bytes_read = 0;
 
 typedef struct mbot_bhy_data_t{
 	/** @name base sensor readings in real units */
@@ -69,4 +71,6 @@ typedef struct mbot_bhy_data_t{
 int mbot_imu_init(mbot_bhy_data_t* data);
 int mbot_imu_print(mbot_bhy_data_t data);
 
+static mbot_bhy_data_t mbot_imu_data;
 
+#endif

@@ -1,6 +1,5 @@
 #include <mbot/imu/imu.h>
-
-extern mbot_bhy_data_t mbot_imu_data;
+#include <mbot/imu/firmware/BHI160B_fw.h>
 
 // Globals for IMU
 uint8_t fifo[FIFO_SIZE];
@@ -122,7 +121,7 @@ int mbot_imu_print(mbot_bhy_data_t data){
     printf("ACCEL RAW| X: %d | Y: %d | Z: %d \n", data.raw_accel[0], data.raw_accel[1], data.raw_accel[2]);
     printf("ACCEL MS2| X: %f | Y: %f | Z: %f \n", data.accel[0], data.accel[1], data.accel[2]);
     printf(" GYRO RAW| X: %d | Y: %d | Z: %d \n", data.raw_gyro[0], data.raw_gyro[1], data.raw_gyro[2]);
-    printf("GYRO RADS| X: %-3.4f | Y: %-3.4f | Z: %-3.4f \r", data.gyro[0], data.gyro[1], data.gyro[2]);
+    printf("GYRO RADS| X: %-3.4f | Y: %-3.4f | Z: %-3.4f \n", data.gyro[0], data.gyro[1], data.gyro[2]);
     printf("  MAG RAW| X: %d | Y: %d | Z: %d |\n", data.raw_mag[0], data.raw_mag[1], data.raw_mag[2]);
     printf("   MAG UT| X: %f | Y: %f | Z: %f |\n", data.mag[0], data.mag[1], data.mag[2]);
     printf("  RPY RAW| X: %5d | Y: %5d| Z: %5d |\n", data.raw_rpy[0], data.raw_rpy[1], data.raw_rpy[2]);

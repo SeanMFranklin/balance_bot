@@ -4,7 +4,7 @@
 #include <pico/binary_info.h>
 #include <mbot/imu/imu.h>
 
-mbot_bhy_data_t mbot_imu_data;
+extern mbot_bhy_data_t mbot_imu_data;
 
 int main() {
     stdio_init_all();
@@ -14,6 +14,7 @@ int main() {
     mbot_imu_init(&mbot_imu_data);
 
     while(1){
+        printf("\033[2J\r");
         mbot_imu_print(mbot_imu_data);
         sleep_ms(50);
     }
