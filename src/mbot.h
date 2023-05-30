@@ -30,11 +30,7 @@
 // TODO: Decide which controller is used, open loop = 1, PID = 0
 #define OPEN_LOOP 1
 
-// These are for the older MPU9250
-// Will be replaced with BHI160
-//static rc_mpu_data_t mpu_data;
-//static rc_mpu_config_t mpu_config;
-static mbot_bhy_data_t mbot_imu_data;
+extern mbot_bhy_data_t mbot_imu_data;
 
 // Global pointer to the i2c bus
 static i2c_inst_t *i2c;

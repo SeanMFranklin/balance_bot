@@ -19,7 +19,9 @@ static bool global_comms_status = COMMS_ERROR;
 static int drive_mode = 0;
 static bool running = false;
 static mbot_params_t MBot;
-extern mbot_bhy_data_t mbot_imu_data;
+
+mbot_bhy_data_t mbot_imu_data;
+mbot_bhy_config_t mbot_imu_config;
 
 
 void register_topics()
@@ -234,9 +236,10 @@ int mbot_init_hardware(void){
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
+    mbot_imu_config = mbot_imu_default_config();
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
-    mbot_imu_init(&mbot_imu_data);
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     return MBOT_OK;
 }
 

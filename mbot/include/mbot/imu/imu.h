@@ -25,8 +25,8 @@
 #include <mbot/imu/bhy.h>
 #include <mbot/imu/bhy_support.h>
 
-#define ACCEL_2_MS2     -0.001209716796875
-#define GYRO_2_RADS     6.651407210344245e-05
+#define ACCEL_2_MS2     -0.000299387 //-(1 / 32767) * 9.81
+#define GYRO_2_RADS     5.326484731e-07
 #define MAG_2_UT        0.0625 // 16LSB/uT not certain about this value
 #define QUAT_2_NORM     6.103515625e-05
 #define RPY_2_RAD       0.00019174759848570515
@@ -64,11 +64,12 @@ typedef struct mbot_bhy_data_t{
 typedef struct mbot_bhy_config_t{
 	int8_t sample_rate; //12, 25, 50, 100, 200
 	int8_t accel_range; // 2, 4, 6, 8 g
-	int8_t gyro_range; // 125, 250, 500, 1000, 2000
+	int16_t gyro_range; // 125, 250, 500, 1000, 2000
 	int8_t enable_mag;
 	int8_t enable_rpy;
 	int8_t enable_quat;
 } mbot_bhy_config_t;
+
 typedef struct bhy_calib_param_t
 {
     int16_t  x_offset; 
@@ -77,6 +78,7 @@ typedef struct bhy_calib_param_t
     int16_t  radius;   
 	uint8_t  accuracy;
 } bhy_calib_param_t;
+
 typedef enum {
     BHI160_SAMPLE_RATE_12_5HZ = 12,
     BHI160_SAMPLE_RATE_25HZ = 25,
@@ -100,12 +102,10 @@ typedef enum {
     BHI160_GYRO_RANGE_2000_DPS = 2000
 } BHI160_GyroRange;
 
-
-
-
 int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config);
-int mbot_imu_print(mbot_bhy_data_t data);
+void mbot_imu_print(mbot_bhy_data_t data);
+mbot_bhy_config_t mbot_imu_default_config(void);
 
-static mbot_bhy_data_t mbot_imu_data;
+
 
 #endif
