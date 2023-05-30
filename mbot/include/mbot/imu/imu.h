@@ -7,6 +7,9 @@
  * 
  */
 
+#ifndef __MBOT_IMU_H__
+#define __MBOT_IMU_H__
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -103,4 +106,6 @@ typedef enum {
 int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config);
 int mbot_imu_print(mbot_bhy_data_t data);
 
+static mbot_bhy_data_t mbot_imu_data;
 
+#endif

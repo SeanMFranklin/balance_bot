@@ -12,6 +12,7 @@
 #include <mbot/defs/mbot_pins.h>
 #include <mbot/defs/mbot_params.h>
 #include <mbot/fram/fram.h>
+#include <mbot/imu/imu.h>
 #include <rc/math/filter.h>
 #include <rc/mpu/mpu.h>
 #include <comms/common.h>
@@ -31,8 +32,9 @@
 
 // These are for the older MPU9250
 // Will be replaced with BHI160
-static rc_mpu_data_t mpu_data;
-static rc_mpu_config_t mpu_config;
+//static rc_mpu_data_t mpu_data;
+//static rc_mpu_config_t mpu_config;
+static mbot_bhy_data_t mbot_imu_data;
 
 // Global pointer to the i2c bus
 static i2c_inst_t *i2c;
