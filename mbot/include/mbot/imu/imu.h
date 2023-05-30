@@ -21,7 +21,6 @@
 #include <mbot/imu/bhy_uc_driver_constants.h>
 #include <mbot/imu/bhy.h>
 #include <mbot/imu/bhy_support.h>
-#include <mbot/imu/firmware/BHI160B_fw.h>
 
 #define ACCEL_2_MS2     -0.001209716796875
 #define GYRO_2_RADS     6.651407210344245e-05
@@ -32,13 +31,6 @@
 #define FIFO_SIZE                      70
 #define MAX_PACKET_LENGTH              18
 #define OUT_BUFFER_SIZE                60
-
-uint8_t fifo[FIFO_SIZE];
-static i2c_inst_t *i2c;
-uint8_t *fifoptr = NULL;
-uint8_t bytes_left_in_fifo = 0;
-uint16_t bytes_remaining = 0;
-uint16_t bytes_read = 0;
 
 typedef struct mbot_bhy_data_t{
 	/** @name base sensor readings in real units */
@@ -66,7 +58,49 @@ typedef struct mbot_bhy_data_t{
 	///@}
 } mbot_bhy_data_t;
 
-int mbot_imu_init(mbot_bhy_data_t* data);
+typedef struct mbot_bhy_config_t{
+	int8_t sample_rate; //12, 25, 50, 100, 200
+	int8_t accel_range; // 2, 4, 6, 8 g
+	int8_t gyro_range; // 125, 250, 500, 1000, 2000
+	int8_t enable_mag;
+	int8_t enable_rpy;
+	int8_t enable_quat;
+} mbot_bhy_config_t;
+typedef struct bhy_calib_param_t
+{
+    int16_t  x_offset; 
+    int16_t  y_offset; 
+    int16_t  z_offset; 
+    int16_t  radius;   
+	uint8_t  accuracy;
+} bhy_calib_param_t;
+typedef enum {
+    BHI160_SAMPLE_RATE_12_5HZ = 12,
+    BHI160_SAMPLE_RATE_25HZ = 25,
+    BHI160_SAMPLE_RATE_50HZ = 50,
+    BHI160_SAMPLE_RATE_100HZ = 100,
+    BHI160_SAMPLE_RATE_200HZ = 200,
+} BHI160_SampleRate;
+
+typedef enum {
+    BHI160_ACCEL_RANGE_2G = 2,
+    BHI160_ACCEL_RANGE_4G = 4,
+    BHI160_ACCEL_RANGE_8G = 8,
+    BHI160_ACCEL_RANGE_16G = 16
+} BHI160_AccelRange;
+
+typedef enum {
+    BHI160_GYRO_RANGE_125_DPS = 125,
+    BHI160_GYRO_RANGE_250_DPS = 250,
+    BHI160_GYRO_RANGE_500_DPS = 500,
+    BHI160_GYRO_RANGE_1000_DPS = 1000,
+    BHI160_GYRO_RANGE_2000_DPS = 2000
+} BHI160_GyroRange;
+
+
+
+
+int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config);
 int mbot_imu_print(mbot_bhy_data_t data);
 
 

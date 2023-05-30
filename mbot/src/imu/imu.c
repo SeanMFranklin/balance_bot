@@ -1,6 +1,8 @@
 #include <mbot/imu/imu.h>
+#include <mbot/imu/firmware/BHI160B_fw.h>
+#include <pico/stdlib.h>
 
-extern mbot_bhy_data_t mbot_imu_data;
+mbot_bhy_data_t mbot_imu_data;
 
 // Globals for IMU
 uint8_t fifo[FIFO_SIZE];
@@ -9,7 +11,7 @@ uint8_t *fifoptr = NULL;
 uint8_t bytes_left_in_fifo = 0;
 uint16_t bytes_remaining = 0;
 uint16_t bytes_read = 0;
-
+uint64_t time_now;
 void _imu_callback(uint gpio, uint32_t events);
 void _bhy_dump_status(void);
 static void _sensors_callback_quaternion(bhy_data_generic_t * sensor_data, bhy_virtual_sensor_t sensor_id);
@@ -20,6 +22,8 @@ static void _sensors_callback_mag(bhy_data_generic_t * sensor_data, bhy_virtual_
 
 
 void _imu_callback(uint gpio, uint32_t events) {
+    //uint64_t last_time = time_now;
+    //time_now = to_us_since_boot(get_absolute_time());
     bhy_data_generic_t fifo_packet;
     bhy_data_type_t packet_type;
     int result;
@@ -39,13 +43,19 @@ void _imu_callback(uint gpio, uint32_t events) {
             fifo[bytes_left_in_fifo++] = *(fifoptr++);
         }
     }
+    //uint64_t time_end = to_us_since_boot(get_absolute_time());
+    //int32_t period =  (int32_t)(time_now - last_time)/1000;
+    //int32_t time_int =  (int32_t)(time_end - time_now);
+    //float freq =  1.0E3/((float)period);
+    //printf("Period: %d ms | Freq: %f Hz | Interrupt: %d us\n", period, freq, time_int);
 }
 
-int mbot_imu_init(mbot_bhy_data_t* data){
+int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config){
     if(data == NULL){
         printf("[ERROR] data struct is NULL\n");
         return -1;
     }
+    // TODO Make these based on config
     data->accel_to_ms2 = ACCEL_2_MS2;
     data->gyro_to_rads = GYRO_2_RADS;
     data->mag_to_uT = MAG_2_UT;
@@ -59,6 +69,9 @@ int mbot_imu_init(mbot_bhy_data_t* data){
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
     gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_RISE, true, &_imu_callback);
     
+    //for time profiling
+    //time_now = to_us_since_boot(get_absolute_time());
+
     printf("Initializing the Bosch IMU...\r\n");
     int8_t init_result = bhy_driver_init(bhy1_fw);
     if(!init_result){
@@ -83,8 +96,13 @@ int mbot_imu_init(mbot_bhy_data_t* data){
     bhy_set_sic_matrix(sic_array);
     
     printf("Installing Sensors...\n");
-    /* install the callback function for parse fifo data */
+    /* install the callback function for parse fifo data Should use config values*/
     if(bhy_install_sensor_callback(VS_TYPE_ROTATION_VECTOR, 0, _sensors_callback_quaternion))
+    {
+        printf("Failed to install sensor callback\n");
+        return -1;
+    }
+    if(bhy_install_sensor_callback(VS_TYPE_GAME_ROTATION_VECTOR, 0, _sensors_callback_quaternion))
     {
         printf("Failed to install sensor callback\n");
         return -1;
@@ -109,11 +127,22 @@ int mbot_imu_init(mbot_bhy_data_t* data){
         printf("Failed to install sensor callback\n");
         return -1;
     }
-    bhy_enable_virtual_sensor(VS_TYPE_ROTATION_VECTOR, 0, 25, 0, 0, 0, 0);
-    bhy_enable_virtual_sensor(VS_TYPE_ORIENTATION, 0, 25, 0, 0, 0, 0);
-    bhy_enable_virtual_sensor(VS_TYPE_ACCELEROMETER, 0, 25, 0, 0, 0, 0);
-    bhy_enable_virtual_sensor(VS_TYPE_GYROSCOPE, 0, 25, 0, 0, 0, 0);
-    bhy_enable_virtual_sensor(VS_TYPE_GEOMAGNETIC_FIELD, 0, 25, 0, 0, 0, 0);
+    
+    bhy_enable_virtual_sensor(VS_TYPE_ACCELEROMETER, 0, config.sample_rate, 0, 0, 0, config.accel_range);
+    bhy_enable_virtual_sensor(VS_TYPE_GYROSCOPE, 0, config.sample_rate, 0, 0, 0, config.gyro_range);
+    if(config.enable_mag){
+        bhy_enable_virtual_sensor(VS_TYPE_GEOMAGNETIC_FIELD, 0, config.sample_rate, 0, 0, 0, 0);
+    }
+    if(config.enable_quat && config.enable_mag){
+        bhy_enable_virtual_sensor(VS_TYPE_ROTATION_VECTOR, 0, config.sample_rate, 0, 0, 0, 0);
+    }
+    else if(config.enable_quat && !config.enable_mag){
+        bhy_enable_virtual_sensor(VS_TYPE_GAME_ROTATION_VECTOR, 0, config.sample_rate, 0, 0, 0, 0);
+    }
+    if(config.enable_rpy && config.enable_mag){
+        bhy_enable_virtual_sensor(VS_TYPE_ORIENTATION, 0, config.sample_rate, 0, 0, 0, 0);
+    }
+   
 
     return 0;
 }
@@ -122,7 +151,7 @@ int mbot_imu_print(mbot_bhy_data_t data){
     printf("ACCEL RAW| X: %d | Y: %d | Z: %d \n", data.raw_accel[0], data.raw_accel[1], data.raw_accel[2]);
     printf("ACCEL MS2| X: %f | Y: %f | Z: %f \n", data.accel[0], data.accel[1], data.accel[2]);
     printf(" GYRO RAW| X: %d | Y: %d | Z: %d \n", data.raw_gyro[0], data.raw_gyro[1], data.raw_gyro[2]);
-    printf("GYRO RADS| X: %-3.4f | Y: %-3.4f | Z: %-3.4f \r", data.gyro[0], data.gyro[1], data.gyro[2]);
+    printf("GYRO RADS| X: %-3.4f | Y: %-3.4f | Z: %-3.4f \n", data.gyro[0], data.gyro[1], data.gyro[2]);
     printf("  MAG RAW| X: %d | Y: %d | Z: %d |\n", data.raw_mag[0], data.raw_mag[1], data.raw_mag[2]);
     printf("   MAG UT| X: %f | Y: %f | Z: %f |\n", data.mag[0], data.mag[1], data.mag[2]);
     printf("  RPY RAW| X: %5d | Y: %5d| Z: %5d |\n", data.raw_rpy[0], data.raw_rpy[1], data.raw_rpy[2]);
