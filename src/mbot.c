@@ -18,10 +18,14 @@ static uint64_t global_pico_time = 0;
 static bool global_comms_status = COMMS_ERROR; 
 static int drive_mode = 0;
 static bool running = false;
-static mbot_params_t MBot;
+static mbot_params_t params;
 
 mbot_bhy_data_t mbot_imu_data;
 mbot_bhy_config_t mbot_imu_config;
+
+rc_filter_t motor_0_pid;
+rc_filter_t motor_1_pid;
+rc_filter_t motor_2_pid;
 
 
 void register_topics()
@@ -84,83 +88,12 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
     drive_mode = MODE_MOTOR_PWM;
 }
 
-//TODO: this could be tied to the IMU interrupt
-bool mbot_loop(repeating_timer_t *rt)
-{
-    global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
-    mbot_vel.utime = global_utime;
-    mbot_read_encoders(&mbot_encoders);
-    mbot_read_imu(&mbot_imu);
-    mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
-    mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[LEFT_MOTOR], mbot_motor_vel.velocity[RIGHT_MOTOR], &mbot_vel);
-    mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
-    // only run if we've got 2 way communication...
-    if (global_comms_status == COMMS_OK)
-    {
-        if(drive_mode == MODE_MOTOR_VEL){
-            mbot_motor_pwm.utime = global_utime;
-            //mbot_motor_vel_controller(mbot_motor_vel_cmd, mbot_motor_vel, &mbot_motor_pwm);
-        }
-
-        else if(drive_mode == MODE_MBOT_VEL){
-            mbot_motor_pwm.utime = global_utime;
-            //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
-        }
-        else {
-            drive_mode = MODE_MOTOR_PWM;
-            mbot_motor_pwm.utime = global_utime;
-            mbot_motor_pwm.pwm[0] = mbot_motor_pwm_cmd.pwm[0];
-            mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
-            mbot_motor_pwm.pwm[2] = mbot_motor_pwm_cmd.pwm[2];
-        }
-
-        // Set motors
-        mbot_motor_set_duty(0, mbot_motor_pwm_cmd.pwm[0]);
-        mbot_motor_set_duty(1, mbot_motor_pwm_cmd.pwm[1]);
-        mbot_motor_set_duty(2, mbot_motor_pwm_cmd.pwm[2]);
-
-        // write the encoders to serial
-        comms_write_topic(MBOT_ENCODERS, &mbot_encoders);
-        // send odom on wire
-        comms_write_topic(MBOT_ODOMETRY, &mbot_odometry);
-        // write the IMU to serial
-        comms_write_topic(MBOT_IMU, &mbot_imu);
-        // write the Body velocity to serial
-        comms_write_topic(MBOT_VEL, &mbot_vel);
-        // write the Motor velocity to serial
-        comms_write_topic(MBOT_MOTOR_VEL, &mbot_motor_vel);
-        // write the PWMs to serial
-        comms_write_topic(MBOT_MOTOR_PWM, &mbot_motor_pwm);
-        //uint64_t fn_run_len = to_us_since_boot(get_absolute_time()) + timestamp_offset - cur_pico_time;
-    }
-    //check comms and kill motors if its been too long
-    uint64_t timeout = to_us_since_boot(get_absolute_time()) - global_pico_time;
-    if(timeout > MBOT_TIMEOUT_US){
-        mbot_motor_set_duty(0, 0.0);
-        mbot_motor_set_duty(1, 0.0);
-        mbot_motor_set_duty(2, 0.0);
-        global_comms_status = COMMS_ERROR;
-    }
-
-    return true;
-}
-
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
     float conversion = (1.0 / MBot.gear_ratio) * (1.0 / MBot.encoder_resolution) * 1E6f * 2.0 * M_PI;
     motor_vel->velocity[0] = MBot.encoder_polarity[0] * (conversion / encoders.delta_time) * encoders.delta_ticks[0];
     motor_vel->velocity[1] = MBot.encoder_polarity[1] * (conversion / encoders.delta_time) * encoders.delta_ticks[1];
     motor_vel->velocity[2] = MBot.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
 }
-
-// typedef struct __attribute__((__packed__)) serial_mbot_imu_t {
-//     int64_t utime;
-//     float gyro[3];
-//     float accel[3];
-//     float mag[3];
-//     float angles_rpy[3]; // roll (x), pitch (y), yaw, (z)
-//     float angles_quat[4]; // quaternion
-//     float temp;
-// } serial_mbot_imu_t;
 
 void mbot_read_imu(serial_mbot_imu_t *imu){
     imu->utime = global_utime;
@@ -219,18 +152,6 @@ int mbot_init_hardware(void){
     printf("initializinging encoders...\n");
     mbot_encoder_init();
 
-    // Initialize I2C
-    printf("setting i2c bus...\n");
-    // Initialize I2C port at 400 kHz
-    i2c = i2c0;
-    i2c_init(i2c, 400 * 1000);
-    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(SDA_PIN);
-    gpio_pull_up(SCL_PIN);
-    // Make the I2C pins available to picotool
-    bi_decl(bi_2pins_with_func(SDA_PIN, SCL_PIN, GPIO_FUNC_I2C));
-
     // Initialize LED
     printf("Starting heartbeat LED...\n");
     gpio_init(LED_PIN);
@@ -240,6 +161,7 @@ int mbot_init_hardware(void){
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
     mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    mbot_init_fram();
     return MBOT_OK;
 }
 
@@ -294,21 +216,89 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("\r%s\n", buf);
 }
 
+//TODO: this could be tied to the IMU interrupt
+bool mbot_loop(repeating_timer_t *rt)
+{
+    global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
+    mbot_vel.utime = global_utime;
+    mbot_read_encoders(&mbot_encoders);
+    mbot_read_imu(&mbot_imu);
+    mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
+    mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[params.mot_right], mbot_motor_vel.velocity[params.mot_left], &mbot_vel);
+    mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
+    // only run if we've got 2 way communication...
+    if (global_comms_status == COMMS_OK)
+    {
+        if(drive_mode == MODE_MOTOR_VEL){
+            float l_pwm, r_pwm;
+            mbot_motor_pwm.utime = global_utime;
+            if(mbot_motor_vel_cmd.velocity[0] >= 0.0){
+                r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right];
+            }
+            else if(mbot_motor_vel_cmd.velocity[0] < 0.0){
+                r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_neg[params.mot_right]) + params.itrcpt_neg[params.mot_right];
+            }
+            if(mbot_motor_vel_cmd.velocity[2] >= 0.0){
+                l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left];
+            }
+            else if(mbot_motor_vel_cmd.velocity[2] < 0.0){
+                l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_neg[params.mot_left]) + params.itrcpt_neg[params.mot_left];
+            }
+            mbot_motor_pwm_cmd.pwm[params.mot_right] = r_pwm;
+            mbot_motor_pwm_cmd.pwm[params.mot_left] = l_pwm;
+        }
+
+        else if(drive_mode == MODE_MBOT_VEL){
+            mbot_motor_pwm.utime = global_utime;
+            //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
+        }
+        else {
+            drive_mode = MODE_MOTOR_PWM;
+            mbot_motor_pwm.utime = global_utime;
+            mbot_motor_pwm.pwm[0] = mbot_motor_pwm_cmd.pwm[0];
+            mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
+            mbot_motor_pwm.pwm[2] = mbot_motor_pwm_cmd.pwm[2];
+        }
+
+        // Set motors
+        mbot_motor_set_duty(0, mbot_motor_pwm_cmd.pwm[0]);
+        mbot_motor_set_duty(1, mbot_motor_pwm_cmd.pwm[1]);
+        mbot_motor_set_duty(2, mbot_motor_pwm_cmd.pwm[2]);
+
+        // write the encoders to serial
+        comms_write_topic(MBOT_ENCODERS, &mbot_encoders);
+        // send odom on wire
+        comms_write_topic(MBOT_ODOMETRY, &mbot_odometry);
+        // write the IMU to serial
+        comms_write_topic(MBOT_IMU, &mbot_imu);
+        // write the Body velocity to serial
+        comms_write_topic(MBOT_VEL, &mbot_vel);
+        // write the Motor velocity to serial
+        comms_write_topic(MBOT_MOTOR_VEL, &mbot_motor_vel);
+        // write the PWMs to serial
+        comms_write_topic(MBOT_MOTOR_PWM, &mbot_motor_pwm);
+        //uint64_t fn_run_len = to_us_since_boot(get_absolute_time()) + timestamp_offset - cur_pico_time;
+    }
+    //check comms and kill motors if its been too long
+    uint64_t timeout = to_us_since_boot(get_absolute_time()) - global_pico_time;
+    if(timeout > MBOT_TIMEOUT_US){
+        mbot_motor_set_duty(0, 0.0);
+        mbot_motor_set_duty(1, 0.0);
+        mbot_motor_set_duty(2, 0.0);
+        global_comms_status = COMMS_ERROR;
+    }
+
+    return true;
+}
+
+
 int main()
 {   
     running = false;
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
-    MBot.robot_type = DIFFERENTIAL_DRIVE;
-    MBot.wheel_radius = WHEEL_RADIUS;
-    MBot.wheel_base = WHEEL_BASE;
-    MBot.gear_ratio = GEAR_RATIO;
-    MBot.encoder_resolution = ENCODER_RES;
-    MBot.motor_polarity[0] = 1;
-    MBot.motor_polarity[2] = -1;
-    MBot.encoder_polarity[0] = 1;
-    MBot.encoder_polarity[2] = -1;
+    mbot_read_fram(0, sizeof(params), &params);
     printf("Starting MBot Loop...\n");
     repeating_timer_t loop_timer;
     add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms

@@ -20,14 +20,7 @@
 
 #define MASTER_CODE	0xF8
 
-/**
- * @brief
- *
- * @param
- *
- * @return     0 on success or -1 on failure.
- */
-int mbot_initialize_fram(i2c_inst_t* i2c);
+#define I2C_FRAM i2c0
 
 /**
  * @brief
@@ -36,7 +29,7 @@ int mbot_initialize_fram(i2c_inst_t* i2c);
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
+int mbot_init_fram(void);
 
 /**
  * @brief
@@ -45,7 +38,7 @@ int mbot_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
+int mbot_read_fram(uint16_t addr, size_t length, uint8_t* data);
 
 /**
  * @brief
@@ -54,7 +47,7 @@ int mbot_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);
+int mbot_write_fram(uint16_t addr, size_t length, uint8_t* data);
 
 /**
  * @brief
@@ -63,7 +56,7 @@ int mbot_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data);
+int mbot_read_word_fram(uint16_t addr, uint16_t* data);
 
 /**
  * @brief
@@ -72,6 +65,15 @@ int mbot_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data);
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_erase_fram(i2c_inst_t* i2c);
+int mbot_write_word_fram(uint16_t addr, uint16_t data);
+
+/**
+ * @brief
+ *
+ * @param
+ *
+ * @return     0 on success or -1 on failure.
+ */
+int mbot_erase_fram(void);
 
 #endif

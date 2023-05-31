@@ -24,8 +24,8 @@ static void _sensors_callback_mag(bhy_data_generic_t * sensor_data, bhy_virtual_
 mbot_bhy_config_t mbot_imu_default_config(void){
     mbot_bhy_config_t config = {
         .sample_rate = 100,
-        .accel_range =  2,
-        .gyro_range = 125,
+        .accel_range =  4,
+        .gyro_range = 250,
         .enable_mag = 1,
         .enable_quat = 1,
         .enable_rpy = 1
@@ -210,7 +210,7 @@ static void _sensors_callback_orientation(bhy_data_generic_t * sensor_data, bhy_
 {
     data_ptr->raw_rpy[0] = -sensor_data->data_vector.y;
     data_ptr->raw_rpy[1] = -sensor_data->data_vector.z;
-    data_ptr->raw_rpy[2] = (int16_t)(sensor_data->data_vector.x << 1)/2; //convert to -2^15 (-PI) to 2^15 (PI)
+    data_ptr->raw_rpy[2] = -(int16_t)(sensor_data->data_vector.x << 1)/2; //convert to -2^15 (-PI) to 2^15 (PI)
     data_ptr->rpy[0] = data_ptr->raw_rpy[0] * data_ptr->rpy_to_rad;
     data_ptr->rpy[1] = data_ptr->raw_rpy[1] * data_ptr->rpy_to_rad;
     data_ptr->rpy[2] = data_ptr->raw_rpy[2] * data_ptr->rpy_to_rad;
@@ -225,8 +225,8 @@ static void _sensors_callback_orientation(bhy_data_generic_t * sensor_data, bhy_
 static void _sensors_callback_accel(bhy_data_generic_t * sensor_data, bhy_virtual_sensor_t sensor_id)
 {
 
-    data_ptr->raw_accel[0] = sensor_data->data_vector.x;
-    data_ptr->raw_accel[1] = sensor_data->data_vector.y;
+    data_ptr->raw_accel[0] = -sensor_data->data_vector.y;
+    data_ptr->raw_accel[1] = sensor_data->data_vector.x;
     data_ptr->raw_accel[2] = sensor_data->data_vector.z;
     data_ptr->accel[0] = (float)data_ptr->raw_accel[0] * data_ptr->accel_to_ms2;
     data_ptr->accel[1] = (float)data_ptr->raw_accel[1] * data_ptr->accel_to_ms2;
