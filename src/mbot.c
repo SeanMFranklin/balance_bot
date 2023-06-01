@@ -79,7 +79,7 @@ void mbot_vel_cmd_cb(serial_twist2D_t *msg)
 void mbot_motor_vel_cmd_cb(serial_mbot_motor_vel_t *msg)
 {
     memcpy(&mbot_motor_vel_cmd, msg, sizeof(serial_mbot_motor_vel_t));
-    drive_mode = MODE_MOTOR_VEL;
+    drive_mode = MODE_MOTOR_VEL_OL;
 }
 
 void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
@@ -89,10 +89,10 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
 }
 
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
-    float conversion = (1.0 / MBot.gear_ratio) * (1.0 / MBot.encoder_resolution) * 1E6f * 2.0 * M_PI;
-    motor_vel->velocity[0] = MBot.encoder_polarity[0] * (conversion / encoders.delta_time) * encoders.delta_ticks[0];
-    motor_vel->velocity[1] = MBot.encoder_polarity[1] * (conversion / encoders.delta_time) * encoders.delta_ticks[1];
-    motor_vel->velocity[2] = MBot.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
+    float conversion = (1.0 / params.gear_ratio) * (1.0 / params.encoder_resolution) * 1E6f * 2.0 * M_PI;
+    motor_vel->velocity[0] = params.encoder_polarity[0] * (conversion / encoders.delta_time) * encoders.delta_ticks[0];
+    motor_vel->velocity[1] = params.encoder_polarity[1] * (conversion / encoders.delta_time) * encoders.delta_ticks[1];
+    motor_vel->velocity[2] = params.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
 }
 
 void mbot_read_imu(serial_mbot_imu_t *imu){
@@ -229,20 +229,26 @@ bool mbot_loop(repeating_timer_t *rt)
     // only run if we've got 2 way communication...
     if (global_comms_status == COMMS_OK)
     {
-        if(drive_mode == MODE_MOTOR_VEL){
+        if(drive_mode == MODE_MOTOR_VEL_OL){
             float l_pwm, r_pwm;
             mbot_motor_pwm.utime = global_utime;
-            if(mbot_motor_vel_cmd.velocity[0] >= 0.0){
+            if(mbot_motor_vel_cmd.velocity[0] > 0.0){
                 r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right];
             }
             else if(mbot_motor_vel_cmd.velocity[0] < 0.0){
                 r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_neg[params.mot_right]) + params.itrcpt_neg[params.mot_right];
             }
-            if(mbot_motor_vel_cmd.velocity[2] >= 0.0){
+            else{
+                r_pwm = 0.0;
+            }
+            if(mbot_motor_vel_cmd.velocity[2] > 0.0){
                 l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left];
             }
             else if(mbot_motor_vel_cmd.velocity[2] < 0.0){
                 l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_neg[params.mot_left]) + params.itrcpt_neg[params.mot_left];
+            }
+            else{
+                l_pwm = 0.0;
             }
             mbot_motor_pwm_cmd.pwm[params.mot_right] = r_pwm;
             mbot_motor_pwm_cmd.pwm[params.mot_left] = l_pwm;
@@ -255,9 +261,9 @@ bool mbot_loop(repeating_timer_t *rt)
         else {
             drive_mode = MODE_MOTOR_PWM;
             mbot_motor_pwm.utime = global_utime;
-            mbot_motor_pwm.pwm[0] = mbot_motor_pwm_cmd.pwm[0];
-            mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
-            mbot_motor_pwm.pwm[2] = mbot_motor_pwm_cmd.pwm[2];
+            mbot_motor_pwm.pwm[params.mot_right] = mbot_motor_pwm_cmd.pwm[0];
+            //mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
+            mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[2];
         }
 
         // Set motors
