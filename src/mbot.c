@@ -224,7 +224,7 @@ bool mbot_loop(repeating_timer_t *rt)
     mbot_read_encoders(&mbot_encoders);
     mbot_read_imu(&mbot_imu);
     mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
-    mbot_calculate_differential_body_vel(mbot_motor_vel.velocity[params.mot_right], mbot_motor_vel.velocity[params.mot_left], &mbot_vel);
+    mbot_calculate_diff_body_vel(mbot_motor_vel.velocity[params.mot_right], mbot_motor_vel.velocity[params.mot_left], &mbot_vel);
     mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
     // only run if we've got 2 way communication...
     if (global_comms_status == COMMS_OK)
