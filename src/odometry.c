@@ -11,9 +11,10 @@ int mbot_calculate_diff_body_vel_imu(float wheel_left_vel, float wheel_right_vel
         return 0; // Return 0 to indicate success
 }
 int mbot_calculate_omni_body_vel(float wheel_left_vel, float wheel_right_vel, float wheel_back_vel, serial_twist2D_t *mbot_vel){
-    // mbot_vel->vx =  (1.0/3.0) * WHEEL_RADIUS * (wheel0_vel * cos(OMNI_MOTOR_ANGLE_0) + wheel1_vel * cos(OMNI_MOTOR_ANGLE_1) + wheel2_vel * cos(OMNI_MOTOR_ANGLE_2));
-    // mbot_vel->vy =  (1.0/3.0) * WHEEL_RADIUS * (wheel0_vel * sin(OMNI_MOTOR_ANGLE_0) + wheel1_vel * sin(OMNI_MOTOR_ANGLE_1) + wheel2_vel * sin(OMNI_MOTOR_ANGLE_2));
-    // mbot_vel->wz = (wheel0_vel - wheel1_vel + wheel2_vel) / (3.0f * WHEEL_RADIUS);
+    // Why is this 2 here?
+    mbot_vel->vx =  (2.0 / 3.0) * OMNI_WHEEL_RADIUS * (wheel_left_vel * cos(OMNI_MOTOR_ANGLE_LFT) + wheel_right_vel * cos(OMNI_MOTOR_ANGLE_RGT) + wheel_back_vel * cos(OMNI_MOTOR_ANGLE_BCK));
+    mbot_vel->vy =  (2.0 / 3.0) * OMNI_WHEEL_RADIUS * (wheel_left_vel * sin(OMNI_MOTOR_ANGLE_LFT) + wheel_right_vel * sin(OMNI_MOTOR_ANGLE_RGT) + wheel_back_vel * sin(OMNI_MOTOR_ANGLE_BCK));
+    mbot_vel->wz =  OMNI_WHEEL_RADIUS * -(wheel_left_vel + wheel_right_vel + wheel_back_vel) / (3.0f * OMNI_BASE_RADIUS);
     return 0; // Return 0 to indicate success
 }
 int mbot_calculate_omni_body_vel_imu(float wheel_left_vel, float wheel_right_vel, float wheel_back_vel, serial_mbot_imu_t imu, serial_twist2D_t *mbot_vel){

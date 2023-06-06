@@ -23,10 +23,22 @@ static mbot_params_t params;
 mbot_bhy_data_t mbot_imu_data;
 mbot_bhy_config_t mbot_imu_config;
 
-rc_filter_t motor_0_pid;
-rc_filter_t motor_1_pid;
-rc_filter_t motor_2_pid;
-
+void print_mbot_params(const mbot_params_t* params) {
+    printf("Robot Type: %d\n", params->robot_type);
+    printf("Wheel Radius: %f\n", params->wheel_radius);
+    printf("Wheel Base: %f\n", params->wheel_base);
+    printf("Gear Ratio: %f\n", params->gear_ratio);
+    printf("Encoder Resolution: %f\n", params->encoder_resolution);
+    printf("Motor Left: %d\n", params->mot_left);
+    printf("Motor Right: %d\n", params->mot_right);
+    printf("Motor Back: %d\n", params->mot_back);
+    printf("Motor Polarity: %d %d %d\n", params->motor_polarity[0], params->motor_polarity[1], params->motor_polarity[2]);
+    printf("Encoder Polarity: %d %d %d\n", params->encoder_polarity[0], params->encoder_polarity[1], params->encoder_polarity[2]);
+    printf("Positive Slope: %f %f %f\n", params->slope_pos[0], params->slope_pos[1], params->slope_pos[2]);
+    printf("Positive Intercept: %f %f %f\n", params->itrcpt_pos[0], params->itrcpt_pos[1], params->itrcpt_pos[2]);
+    printf("Negative Slope: %f %f %f\n", params->slope_neg[0], params->slope_neg[1], params->slope_neg[2]);
+    printf("Negative Intercept: %f %f %f\n", params->itrcpt_neg[0], params->itrcpt_neg[1], params->itrcpt_neg[2]);
+}
 
 void register_topics()
 {
@@ -158,9 +170,11 @@ int mbot_init_hardware(void){
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     mbot_imu_config = mbot_imu_default_config();
+    mbot_imu_config.enable_quat = 0;
+    mbot_imu_config.sample_rate = 50;
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    //mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     mbot_init_fram();
     return MBOT_OK;
 }
@@ -181,7 +195,7 @@ int mbot_init_comms(void){
 }
 
 void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, serial_pose2D_t odometry, serial_mbot_motor_vel_t motor_vel){
-    printf("\033[2J\r");
+    //printf("\033[2J\r");
     if(global_comms_status == COMMS_OK){
         printf("| \033[32m COMMS OK \033[0m TIME: %lld |\n", global_utime);
     }
@@ -222,15 +236,31 @@ bool mbot_loop(repeating_timer_t *rt)
     global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
     mbot_vel.utime = global_utime;
     mbot_read_encoders(&mbot_encoders);
-    mbot_read_imu(&mbot_imu);
+    //mbot_read_imu(&mbot_imu);
     mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
-    mbot_calculate_diff_body_vel(mbot_motor_vel.velocity[params.mot_right], mbot_motor_vel.velocity[params.mot_left], &mbot_vel);
+    
+    if(params.robot_type == 1){
+        mbot_calculate_diff_body_vel(   mbot_motor_vel.velocity[params.mot_left], 
+                                        mbot_motor_vel.velocity[params.mot_right], 
+                                        &mbot_vel
+                                    );
+    }
+    
+    else if(params.robot_type == 2){
+        mbot_calculate_omni_body_vel(   mbot_motor_vel.velocity[params.mot_left], 
+                                        mbot_motor_vel.velocity[params.mot_right], 
+                                        mbot_motor_vel.velocity[params.mot_back], 
+                                        &mbot_vel
+                                    );
+    }
+
     mbot_calculate_odometry(mbot_vel, MAIN_LOOP_PERIOD, &mbot_odometry);
+    mbot_odometry.utime = global_utime;
     // only run if we've got 2 way communication...
     if (global_comms_status == COMMS_OK)
     {
         if(drive_mode == MODE_MOTOR_VEL_OL){
-            float l_pwm, r_pwm;
+            float l_pwm, r_pwm, b_pwm;
             mbot_motor_pwm.utime = global_utime;
             if(mbot_motor_vel_cmd.velocity[0] > 0.0){
                 r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right];
@@ -240,6 +270,15 @@ bool mbot_loop(repeating_timer_t *rt)
             }
             else{
                 r_pwm = 0.0;
+            }
+            if(mbot_motor_vel_cmd.velocity[1] > 0.0){
+                b_pwm = (mbot_motor_vel_cmd.velocity[1] * params.slope_pos[params.mot_back]) + params.itrcpt_pos[params.mot_back];
+            }
+            else if(mbot_motor_vel_cmd.velocity[1] < 0.0){
+                b_pwm = (mbot_motor_vel_cmd.velocity[1] * params.slope_neg[params.mot_back]) + params.itrcpt_neg[params.mot_back];
+            }
+            else{
+                b_pwm = 0.0;
             }
             if(mbot_motor_vel_cmd.velocity[2] > 0.0){
                 l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left];
@@ -251,6 +290,7 @@ bool mbot_loop(repeating_timer_t *rt)
                 l_pwm = 0.0;
             }
             mbot_motor_pwm_cmd.pwm[params.mot_right] = r_pwm;
+            mbot_motor_pwm_cmd.pwm[params.mot_back] = b_pwm;
             mbot_motor_pwm_cmd.pwm[params.mot_left] = l_pwm;
         }
 
@@ -261,9 +301,9 @@ bool mbot_loop(repeating_timer_t *rt)
         else {
             drive_mode = MODE_MOTOR_PWM;
             mbot_motor_pwm.utime = global_utime;
-            mbot_motor_pwm.pwm[params.mot_right] = mbot_motor_pwm_cmd.pwm[0];
-            //mbot_motor_pwm.pwm[1] = mbot_motor_pwm_cmd.pwm[1];
-            mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[2];
+            mbot_motor_pwm.pwm[params.mot_right] = mbot_motor_pwm_cmd.pwm[params.mot_right];
+            mbot_motor_pwm.pwm[params.mot_back] = mbot_motor_pwm_cmd.pwm[params.mot_back];
+            mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[params.mot_left];
         }
 
         // Set motors
@@ -305,6 +345,8 @@ int main()
     mbot_init_hardware();
     mbot_init_comms();
     mbot_read_fram(0, sizeof(params), &params);
+    sleep_ms(3000);
+    print_mbot_params(&params);
     printf("Starting MBot Loop...\n");
     repeating_timer_t loop_timer;
     add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms

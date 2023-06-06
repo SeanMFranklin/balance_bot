@@ -101,7 +101,7 @@ int main() {
 
     
     /*************************************************
-     * find encoder polarity relative to motor
+     * find encoder polarity relative to positive motor PWM
      *************************************************/
     printf("\nTesting Encoder Polarity...\n");
     mbot_motor_set_duty(0, 0.3);
@@ -127,10 +127,10 @@ int main() {
     mbot_motor_set_duty(1, 0.0);
     mbot_motor_set_duty(2, 0.0);
 
-    printf("\nENC0 POL: %d , ENC1 POL: %d , ENC2 POL: %d\n", params.encoder_polarity[0], params.encoder_polarity[1], params.encoder_polarity[2]);
 
     /*************************************************
-     * find motor polarity relative to IMU
+     * find motor polarity relative to IMU, this is the
+     * control signal to turn the robot CCW
      *************************************************/
     printf("\nTesting Motor Polarity...\n");
     mbot_imu_config = mbot_imu_default_config();
@@ -183,7 +183,10 @@ int main() {
         else {
             params.motor_polarity[i] = 1;
         }
+        params.encoder_polarity[i] *= params.motor_polarity[i];
     }
+
+    printf("\nEncoder Polarity: (%d, %d, %d)\n", params.encoder_polarity[0], params.encoder_polarity[1], params.encoder_polarity[2]);
     printf("Motor Polarity: (%d, %d, %d)\n", params.motor_polarity[0], params.motor_polarity[1], params.motor_polarity[2]);
 
 

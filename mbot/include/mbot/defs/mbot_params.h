@@ -10,7 +10,7 @@
 
 #define SYS_CLOCK       125000 //system clock in kHz
 #define PWM_FREQ        10000
-#define MAIN_LOOP_HZ            50.0 // Hz of control loop
+#define MAIN_LOOP_HZ            25.0 // Hz of control loop
 #define MAIN_LOOP_PERIOD        (1.0f / MAIN_LOOP_HZ)
 
 
@@ -28,11 +28,14 @@
 #define WHEEL_BASE              0.15571
 
 // MBot Omni Parameters
-#define OMNI_BASE_RADIUS        0.10250     // radius of wheel centers
+#define OMNI_BASE_RADIUS        0.094     // radius of wheel centers
 #define OMNI_WHEEL_RADIUS       0.048       // 0.050 for old wheels
-#define OMNI_MOTOR_ANGLE_LFT (-M_PI / 3.0f)   // Wheel 0 angle in radians (-60 degrees)
-#define OMNI_MOTOR_ANGLE_BCK (M_PI)           // Wheel 1 angle in radians (180 degrees)
-#define OMNI_MOTOR_ANGLE_RGT (M_PI / 3.0f)    // Wheel 2 angle in radians (60 degrees)
+//#define OMNI_MOTOR_ANGLE_LFT (-M_PI / 3.0f)   // Left wheel rotation axis (-60 degrees)
+//#define OMNI_MOTOR_ANGLE_BCK (M_PI)           // Back wheel rotation axis (180 degrees)
+//#define OMNI_MOTOR_ANGLE_RGT (M_PI / 3.0f)    // Right wheel rotation axis (60 degrees)
+#define OMNI_MOTOR_ANGLE_LFT (-M_PI / 6.0f)   // Left wheel velocity angle (-30 degrees)
+#define OMNI_MOTOR_ANGLE_BCK (M_PI / 2.0f)           // Back wheel velocity angle (90 degrees)
+#define OMNI_MOTOR_ANGLE_RGT (-5.0 * M_PI / 6.0f)    // Right wheel velocity angle (-150 degrees)
 #define INV_SQRT3               5.7735026918962575E-1
 
 typedef struct mbot_params_t{
