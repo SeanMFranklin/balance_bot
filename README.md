@@ -59,3 +59,15 @@ make
 sudo make install
 ```
 
+## Installing openocd and gdb-multiarch
+NoteL We should add this to the setub.sh script
+```bash
+sudo apt-get install libftdi-dev gdb-multiarch
+git clone https://github.com/raspberrypi/openocd.git --recursive --branch rp2040 --depth=1
+cd openocd
+./bootstrap
+./configure --enable-ftdi --enable-sysfsgpio --enable-bcm2835gpio
+make -j4
+sudo make install
+```
+
