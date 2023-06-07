@@ -45,3 +45,17 @@ cd build
 cmake ..
 make
 ```
+
+## Installing picotool
+NOTE: We should add this to the setup.sh script, as it can be done as soon as the pico-sdk is cloned
+```bash
+wget https://github.com/raspberrypi/picotool/archive/refs/tags/1.1.1.zip
+unzip 1.1.1.zip
+cd picotool-1.1.1
+mkdir build && cd build
+export PICO_SDK_PATH=~/mbot_ws/mbot_firmware/lib/pico-sdk
+cmake ..
+make
+sudo make install
+```
+
