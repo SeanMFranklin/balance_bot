@@ -71,3 +71,24 @@ make -j4
 sudo make install
 ```
 
+## Uploading firmware to the pico
+There are a few ways to upload firmware, using the bootload partition on the pico, using picotool or using the upload.sh script and openocd.
+
+### Bootloader
+Plug in the pico while holding the BOOTLOAD button.  The pico will be mounted as a drive.  Copy the mbot.uf2 file over to the drive.
+
+### picotool
+Plug in the pico while holding the BOOTLOAD button.  Run:
+```bash
+picotool load build/src/mbot.uf2
+picotool reboot
+```
+
+### upload.sh and openocd
+Run the upload script which uses openocd.  This does not require puting the Pico into bootloader mode.  You must have the SWD wires (SWDIO, SWGND, and SWCLK) connected to GPIO 24 (Pin 18), GND (Pin 20) and GPIO 25 (Pin 22) on the Raspberry Pi.  Note, when using the upload script and openocd, you upload the .elf firmware file, not the .uf2 firmware file, they are just a different format, but the same firmware.
+ ```bash
+ upload.sh build/src/mbot.elf
+ ```
+
+
+
