@@ -3,6 +3,8 @@ from pygame.locals import *
 import time
 import numpy as np
 import lcm
+import sys
+sys.path.append('/usr/lib/python3.9/site-packages/')
 from mbot_lcm_msgs.mbot_motor_vel_cmd_t import mbot_motor_vel_cmd_t
 
 LIN_VEL_CMD = 100.0 # rad/s

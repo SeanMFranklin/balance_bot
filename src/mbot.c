@@ -173,7 +173,7 @@ int mbot_init_hardware(void){
     mbot_imu_config.sample_rate = 25;
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    //mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     mbot_init_fram();
     return MBOT_OK;
 }
@@ -235,7 +235,7 @@ bool mbot_loop(repeating_timer_t *rt)
     global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
     mbot_vel.utime = global_utime;
     mbot_read_encoders(&mbot_encoders);
-    mbot_read_imu(&mbot_imu);
+    //mbot_read_imu(&mbot_imu);
     mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
     
     if(params.robot_type == 1){
