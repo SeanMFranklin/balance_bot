@@ -6,6 +6,7 @@ import lcm
 import sys
 sys.path.append('/usr/lib/python3.9/site-packages/')
 from mbot_lcm_msgs.mbot_motor_vel_cmd_t import mbot_motor_vel_cmd_t
+from mbot_lcm_msgs.twist2D_t import twist2D_t
 
 LIN_VEL_CMD = 100.0 # rad/s
 ANG_VEL_CMD = 50.0 # rad/s
@@ -55,11 +56,17 @@ while(running):
             w_vel = -ANG_VEL_CMD
         else:
             w_vel = 0.0
-    command = mbot_motor_vel_cmd_t()
+    # command = mbot_motor_vel_cmd_t()
+    # command.velocity[0] = (x_vel) + (0.5 * y_vel) + w_vel
+    # command.velocity[1] = y_vel - w_vel
+    # command.velocity[2] = (-x_vel) + (0.5 * y_vel) + w_vel
+    # lc.publish("MBOT_MOTOR_VEL_CMD",command.encode())
+    command = twist2D_t()
+    command.vx = x_vel
+    command.vy = y_vel
+    command.wz = w_vel
+    lc.publish("MBOT_VEL_CMD", command.encode())
 
-    command.velocity[0] = (x_vel) + (0.5 * y_vel) + w_vel
-    command.velocity[1] = y_vel - w_vel
-    command.velocity[2] = (-x_vel) + (0.5 * y_vel) + w_vel
-    lc.publish("MBOT_MOTOR_VEL_CMD",command.encode())
+
     time.sleep(0.05)
 

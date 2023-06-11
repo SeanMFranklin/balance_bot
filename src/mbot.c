@@ -295,7 +295,39 @@ bool mbot_loop(repeating_timer_t *rt)
 
         else if(drive_mode == MODE_MBOT_VEL){
             mbot_motor_pwm.utime = global_utime;
-            //mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);  
+            mbot_body_vel_controller(mbot_vel_cmd, mbot_vel, &mbot_motor_pwm);
+            float l_pwm, r_pwm, b_pwm;
+            mbot_motor_pwm.utime = global_utime;
+            if(mbot_motor_vel_cmd.velocity[0] > 0.0){
+                r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right] + mbot_motor_pwm[params.mot_right];
+            }
+            else if(mbot_motor_vel_cmd.velocity[0] < 0.0){
+                r_pwm = (mbot_motor_vel_cmd.velocity[0] * params.slope_neg[params.mot_right]) + params.itrcpt_neg[params.mot_right] + mbot_motor_pwm[params.mot_right];
+            }
+            else{
+                r_pwm = 0.0;
+            }
+            if(mbot_motor_vel_cmd.velocity[1] > 0.0){
+                b_pwm = (mbot_motor_vel_cmd.velocity[1] * params.slope_pos[params.mot_back]) + params.itrcpt_pos[params.mot_back] + mbot_motor_pwm[params.mot_back];
+            }
+            else if(mbot_motor_vel_cmd.velocity[1] < 0.0){
+                b_pwm = (mbot_motor_vel_cmd.velocity[1] * params.slope_neg[params.mot_back]) + params.itrcpt_neg[params.mot_back] + mbot_motor_pwm[params.mot_back];
+            }
+            else{
+                b_pwm = 0.0;
+            }
+            if(mbot_motor_vel_cmd.velocity[2] > 0.0){
+                l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left] + mbot_motor_pwm[params.mot_left];
+            }
+            else if(mbot_motor_vel_cmd.velocity[2] < 0.0){
+                l_pwm = (mbot_motor_vel_cmd.velocity[2] * params.slope_neg[params.mot_left]) + params.itrcpt_neg[params.mot_left]+ mbot_motor_pwm[params.mot_left];
+            }
+            else{
+                l_pwm = 0.0;
+            }
+            mbot_motor_pwm_cmd.pwm[params.mot_right] = r_pwm;
+            mbot_motor_pwm_cmd.pwm[params.mot_back] = b_pwm;
+            mbot_motor_pwm_cmd.pwm[params.mot_left] = l_pwm;
         }
         else {
             drive_mode = MODE_MOTOR_PWM;
