@@ -37,6 +37,7 @@
 #define OMNI_MOTOR_ANGLE_BCK (M_PI / 2.0f)           // Back wheel velocity angle (90 degrees)
 #define OMNI_MOTOR_ANGLE_RGT (-5.0 * M_PI / 6.0f)    // Right wheel velocity angle (-150 degrees)
 #define INV_SQRT3               5.7735026918962575E-1
+#define SQRT3                   1.732050807568877
 
 typedef struct mbot_params_t{
     int robot_type;
