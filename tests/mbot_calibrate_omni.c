@@ -378,9 +378,9 @@ int main() {
         duty_right[i] = -d;
         duty_left[i] = -d;
         duty_back[i] = -d;
-        wheel_speed_right[i] = conv * params.encoder_resolution * mbot_encoder_read_delta(mot_right) / dt;
-        wheel_speed_left[i] = conv * params.encoder_resolution * mbot_encoder_read_delta(mot_left) / dt;
-        wheel_speed_back[i] = conv * params.encoder_resolution * mbot_encoder_read_delta(mot_back) / dt;
+        wheel_speed_right[i] = conv * mbot_encoder_read_delta(mot_right) / dt;
+        wheel_speed_left[i] = conv * mbot_encoder_read_delta(mot_left) / dt;
+        wheel_speed_back[i] = conv * mbot_encoder_read_delta(mot_back) / dt;
         printf("duty: %f, right: %f, left: %f, back: %f\n", duty_right[i], wheel_speed_right[i], wheel_speed_left[i], wheel_speed_back[i]);
     }
     
@@ -423,9 +423,9 @@ int main() {
         duty_right[i] = d;
         duty_left[i] = d;
         duty_back[i] = d;
-        wheel_speed_right[i] = conv * params.encoder_resolution * mbot_encoder_read_delta(mot_right) / dt;
-        wheel_speed_left[i] = conv * params.encoder_resolution *  mbot_encoder_read_delta(mot_left) / dt;
-        wheel_speed_back[i] = conv * params.encoder_resolution * mbot_encoder_read_delta(mot_back) / dt;
+        wheel_speed_right[i] = conv * mbot_encoder_read_delta(mot_right) / dt;
+        wheel_speed_left[i] = conv * mbot_encoder_read_delta(mot_left) / dt;
+        wheel_speed_back[i] = conv * mbot_encoder_read_delta(mot_back) / dt;
         printf("duty: %f, right: %f, left: %f, back: %f\n", duty_right[i], wheel_speed_right[i], wheel_speed_left[i], wheel_speed_back[i]);
     }
 
