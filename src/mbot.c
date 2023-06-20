@@ -299,32 +299,35 @@ bool mbot_loop(repeating_timer_t *rt)
             mbot_motor_vel_cmd.velocity[params.mot_left] = (SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
             mbot_motor_vel_cmd.velocity[params.mot_right] = (-SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
             mbot_motor_vel_cmd.velocity[params.mot_back] = (mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
-
+            float vel_left_comp = params.motor_polarity[params.mot_left] * mbot_motor_vel_cmd.velocity[params.mot_left];
+            float vel_right_comp = params.motor_polarity[params.mot_right] * mbot_motor_vel_cmd.velocity[params.mot_right];
+            float vel_back_comp = params.motor_polarity[params.mot_back] * mbot_motor_vel_cmd.velocity[params.mot_back];
             float l_pwm, r_pwm, b_pwm;
             mbot_motor_pwm.utime = global_utime;
-            if(mbot_motor_vel_cmd.velocity[params.mot_right] > 0.0){
-                r_pwm = (mbot_motor_vel_cmd.velocity[params.mot_right] * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right];
+
+            if(vel_right_comp > 0.0){
+                r_pwm = (vel_right_comp * params.slope_pos[params.mot_right]) + params.itrcpt_pos[params.mot_right];
             }
-            else if(mbot_motor_vel_cmd.velocity[params.mot_right] < 0.0){
-                r_pwm = (mbot_motor_vel_cmd.velocity[params.mot_right] * params.slope_neg[params.mot_right]) + params.itrcpt_neg[params.mot_right];
+            else if(vel_right_comp < 0.0){
+                r_pwm = (vel_right_comp * params.slope_neg[params.mot_right]) + params.itrcpt_neg[params.mot_right];
             }
             else{
                 r_pwm = 0.0;
             }
-            if(mbot_motor_vel_cmd.velocity[params.mot_back] > 0.0){
-                b_pwm = (mbot_motor_vel_cmd.velocity[params.mot_back] * params.slope_pos[params.mot_back]) + params.itrcpt_pos[params.mot_back];
+            if(vel_back_comp > 0.0){
+                b_pwm = (vel_back_comp * params.slope_pos[params.mot_back]) + params.itrcpt_pos[params.mot_back];
             }
-            else if(mbot_motor_vel_cmd.velocity[params.mot_back] < 0.0){
-                b_pwm = (mbot_motor_vel_cmd.velocity[params.mot_back] * params.slope_neg[params.mot_back]) + params.itrcpt_neg[params.mot_back];
+            else if(vel_back_comp < 0.0){
+                b_pwm = (vel_back_comp * params.slope_neg[params.mot_back]) + params.itrcpt_neg[params.mot_back];
             }
             else{
                 b_pwm = 0.0;
             }
-            if(mbot_motor_vel_cmd.velocity[params.mot_left] > 0.0){
-                l_pwm = (mbot_motor_vel_cmd.velocity[params.mot_left] * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left];
+            if(vel_left_comp > 0.0){
+                l_pwm = (vel_left_comp * params.slope_pos[params.mot_left]) + params.itrcpt_pos[params.mot_left];
             }
-            else if(mbot_motor_vel_cmd.velocity[params.mot_left] < 0.0){
-                l_pwm = (mbot_motor_vel_cmd.velocity[params.mot_left] * params.slope_neg[params.mot_left]) + params.itrcpt_neg[params.mot_left];
+            else if(vel_left_comp < 0.0){
+                l_pwm = (vel_left_comp * params.slope_neg[params.mot_left]) + params.itrcpt_neg[params.mot_left];
             }
             else{
                 l_pwm = 0.0;

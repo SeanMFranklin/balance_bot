@@ -183,7 +183,7 @@ int main() {
         else {
             params.motor_polarity[i] = 1;
         }
-        //params.encoder_polarity[i] *= params.motor_polarity[i];
+        params.encoder_polarity[i] *= params.motor_polarity[i];
     }
 
     printf("\nEncoder Polarity: (%d, %d, %d)\n", params.encoder_polarity[0], params.encoder_polarity[1], params.encoder_polarity[2]);
