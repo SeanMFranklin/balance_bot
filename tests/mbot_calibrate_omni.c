@@ -7,6 +7,7 @@
 #include <mbot/motor/motor.h>
 #include <mbot/encoder/encoder.h>
 #include <mbot/fram/fram.h>
+#include <hardware/sync.h>
 
 mbot_bhy_data_t mbot_imu_data;
 mbot_bhy_config_t mbot_imu_config;
@@ -183,7 +184,7 @@ int main() {
         else {
             params.motor_polarity[i] = 1;
         }
-        params.encoder_polarity[i] *= params.motor_polarity[i];
+        //params.encoder_polarity[i] *= params.motor_polarity[i];
     }
 
     printf("\nEncoder Polarity: (%d, %d, %d)\n", params.encoder_polarity[0], params.encoder_polarity[1], params.encoder_polarity[2]);
@@ -478,12 +479,18 @@ int main() {
     printf("m_bn: %f\n", m_bn);
     printf("b_bn: %f\n", b_bn);
 
-    
+    //Disable interrupts before writing to FRAM (so IMU doesn't affect us)
+    uint32_t irq_status = save_and_disable_interrupts();
+    printf("Writing to FRAM...\n");
     mbot_write_fram(0, sizeof(params), &params);
+
+    printf("Reading from written FRAM...\n");
     mbot_params_t written;
     mbot_read_fram(0, sizeof(written), &written);
+    restore_interrupts(irq_status); //Restore IRQs
+
     printf("\nParameters stored in FRAM (%d bytes): \n", sizeof(written));
     print_mbot_params_omni(&written);
-
+    
     printf("\nDone!\n");
 }
