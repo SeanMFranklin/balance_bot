@@ -8,6 +8,7 @@
  */
 
 #include <mbot/fram/fram.h>
+#include <hardware/sync.h>
 
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
 int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);
@@ -121,13 +122,17 @@ int mbot_init_fram(void)
 
 int mbot_read_fram(uint16_t addr, size_t length, uint8_t* data)
 {
+    uint32_t irq_status = save_and_disable_interrupts(); //Prevent IMU interrupts
     int ret = __i2c_fram_read_bytes(i2c, addr, length, data);
+    restore_interrupts(irq_status); //Restore IRQs
     return ret;
 }
 
 int mbot_write_fram(uint16_t addr, size_t length, uint8_t* data)
 {
+    uint32_t irq_status = save_and_disable_interrupts(); //Prevent IMU interrupts
     int ret = __i2c_fram_write_bytes(i2c, addr, length, data);
+    restore_interrupts(irq_status); //Restore IRQs
     return ret;
 }
 
