@@ -206,7 +206,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     const char* odom_headings[] = {"X", "Y", "THETA"};
     const char* motor_vel_headings[] = {"MOT 0", "MOT 1", "MOT 2"};
     // we shouldn't need to do this, need to update generateTable to handle different datatypes
-    int encs[3] = {(int)mbot_encoders.ticks[0], (int)mbot_encoders.ticks[1], (int)mbot_encoders.ticks[2]};
+    int encs[3] = {(int)encoders.ticks[0], (int)encoders.ticks[1], (int)encoders.ticks[2]};
     char buf[1024] = {0};
     generateTableInt(buf, 1, 3, "ENCODERS", enc_headings, encs);
     printf("\r%s", buf);
@@ -403,7 +403,7 @@ int main()
             gpio_put(LED_PIN, 0);
         }
         // Print State
-        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
+        // mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
         sleep_ms(200);  
         counter++;
     }
