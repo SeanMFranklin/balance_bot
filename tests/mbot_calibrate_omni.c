@@ -134,56 +134,94 @@ int main() {
      *************************************************/
     printf("\nTesting Motor Polarity...\n");
     mbot_imu_config = mbot_imu_default_config();
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    int imu_init_status = mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    if(imu_init_status == 0){
+        // IMU available
+        //  find motor polarity
+        float gyro_z[3] = {0, 0, 0};
+        // Definitions for motor duties for each case
+        float motor_duties[3][3] = {
+            {0.4, 0.0, 0.0},
+            {0.0, 0.4, 0.0},
+            {0.0, 0.0, 0.4},
+        };
+        for (int i = 0; i < 3; i++)
+        {
+            mbot_motor_set_duty(0, motor_duties[i][0]);
+            mbot_motor_set_duty(1, motor_duties[i][1]);
+            mbot_motor_set_duty(2, motor_duties[i][2]);
+            // measure gyro to determine polarity of motor
+            for (int j = 0; j < 25; j++)
+            {
+                gyro_z[i] += mbot_imu_data.gyro[2];
+                sleep_ms(20);
+            }
+            // Stop
+            mbot_motor_set_duty(0, 0.0);
+            mbot_motor_set_duty(1, 0.0);
+            mbot_motor_set_duty(2, 0.0);
+            sleep_ms(100);
 
-    printf("\nTesting Motor Polarity...\n");
+            mbot_motor_set_duty(0, -motor_duties[i][0]);
+            mbot_motor_set_duty(1, -motor_duties[i][1]);
+            mbot_motor_set_duty(2, -motor_duties[i][2]);
+            for (int j = 0; j < 25; j++)
+            {
+                gyro_z[i] += -mbot_imu_data.gyro[2];
+                sleep_ms(20);
+            }
 
-    // find motor polarity
-    float gyro_z[3] = {0, 0, 0};
-    // Definitions for motor duties for each case
-    float motor_duties[3][3] = {
-        {0.4, 0.0, 0.0},
-        {0.0, 0.4, 0.0},
-        {0.0, 0.0, 0.4},
-    };
-    for (int i = 0; i < 3; i++) {
-        mbot_motor_set_duty(0, motor_duties[i][0]);
-        mbot_motor_set_duty(1, motor_duties[i][1]);
-        mbot_motor_set_duty(2, motor_duties[i][2]);
-        // measure gyro to determine polarity of motor
-        for (int j = 0; j < 25; j++) {
-            gyro_z[i] += mbot_imu_data.gyro[2];
-            sleep_ms(20);
+            mbot_motor_set_duty(0, 0.0);
+            mbot_motor_set_duty(1, 0.0);
+            mbot_motor_set_duty(2, 0.0);
+            printf("Gyro: %ff\n", gyro_z[i]);
+            sleep_ms(500);
         }
-        //Stop
-        mbot_motor_set_duty(0, 0.0);
-        mbot_motor_set_duty(1, 0.0);
-        mbot_motor_set_duty(2, 0.0);
-        sleep_ms(100);
 
-        mbot_motor_set_duty(0, -motor_duties[i][0]);
-        mbot_motor_set_duty(1, -motor_duties[i][1]);
-        mbot_motor_set_duty(2, -motor_duties[i][2]);
-        for (int j = 0; j < 25; j++) {
-            gyro_z[i] += -mbot_imu_data.gyro[2];
-            sleep_ms(20);
+        for (int i = 0; i < 3; i++)
+        {
+            if (gyro_z[i] > 0.0)
+            {
+                params.motor_polarity[i] = -1;
+            }
+            else
+            {
+                params.motor_polarity[i] = 1;
+            }
+            params.encoder_polarity[i] *= params.motor_polarity[i];
         }
+    }else{
+        //Failed to init IMU - do manual motor calibration
+        printf("\nNo IMU available - doing interactive motor calibration\n");
+        printf("Press any character to start calibration.\n");
+        printf("Pay attention to what direction the wheel spun!\n\n");
+        getchar();
 
-        mbot_motor_set_duty(0, 0.0);
-        mbot_motor_set_duty(1, 0.0);
-        mbot_motor_set_duty(2, 0.0);
-        printf("Gyro: %ff\n", gyro_z[i]);
-        sleep_ms(500);
-    }
-
-    for(int i=0; i<3; i++){
-        if(gyro_z[i] > 0.0){
-            params.motor_polarity[i] = -1;
+        for(int motor = 0; motor < 3; ++motor){
+            printf("Running motor %d...\n", motor);
+            while(1){
+                mbot_motor_set_duty(motor, 0.4);
+                sleep_ms(1000);
+                mbot_motor_set_duty(motor, 0);
+                printf("Which direction did the wheel spin?\n");
+                printf("Enter 0 for Clockwise, 1 for CounterClockwise, or r for Retry.\n");
+                char input = getchar();
+                printf("Entered: [%c]\n", input);
+                while(input != '0' && input != '1' && input != 'r'){
+                    printf("Unrecognized command [%c], please input '0', '1', or 'r'.\n", input);
+                    input = getchar();
+                }
+                if(input == '0'){
+                    params.motor_polarity[motor] = -1;
+                    break;
+                }else if(input == '1'){
+                    params.motor_polarity[motor] = 1;
+                    break;
+                }
+                //Else, retry the process
+            }
+            params.encoder_polarity[motor] *= params.motor_polarity[motor];
         }
-        else {
-            params.motor_polarity[i] = 1;
-        }
-        params.encoder_polarity[i] *= params.motor_polarity[i];
     }
 
     printf("\nEncoder Polarity: (%d, %d, %d)\n", params.encoder_polarity[0], params.encoder_polarity[1], params.encoder_polarity[2]);
