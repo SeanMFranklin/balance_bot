@@ -139,6 +139,18 @@ pico_enable_stdio_uart(mbot_current_control_test 0)
 pico_add_extra_outputs(mbot_current_control_test)
 
 
+#USB serial test
+add_executable(mbot_usb_serial_test
+  mbot_usb_serial_test.c
+)
+target_link_libraries(mbot_usb_serial_test
+  pico_stdlib
+  
+)
+pico_enable_stdio_usb(mbot_usb_serial_test 1)
+pico_enable_stdio_uart(mbot_usb_serial_test 0)
+pico_add_extra_outputs(mbot_usb_serial_test)
+
 #Encoder tests
 add_executable(mbot_encoder_test
   mbot_encoder_test.c
