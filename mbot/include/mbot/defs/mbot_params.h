@@ -28,7 +28,9 @@
 #define WHEEL_BASE              0.15571
 
 // MBot Omni Parameters
-#define OMNI_BASE_RADIUS        0.094     // radius of wheel centers
+// #define OMNI_OLD_BASE_RADIUS        0.094     // radius of wheel centers (old bot)
+#define OMNI_BASE_RADIUS        0.10843     // Radius of base, from center of base to middle of omni wheels
+                                            // Base radius to outer surface on wheel is 0.1227
 #define OMNI_WHEEL_RADIUS       0.048       // 0.050 for old wheels
 //#define OMNI_MOTOR_ANGLE_LFT (-M_PI / 3.0f)   // Left wheel rotation axis (-60 degrees)
 //#define OMNI_MOTOR_ANGLE_BCK (M_PI)           // Back wheel rotation axis (180 degrees)
