@@ -8,6 +8,7 @@
  */
 
 #include <mbot/fram/fram.h>
+#include <hardware/sync.h>
 
 int __i2c_fram_read_bytes(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data);
 int __i2c_fram_read_word(i2c_inst_t* i2c, uint16_t addr, uint16_t* data);
@@ -90,12 +91,19 @@ int __get_device_id(i2c_inst_t* i2c, uint16_t *manuf_id, uint16_t *prod_id)
     return 0;
 }
 
+static i2c_inst_t* i2c;
+
 /**
 * functions for external use
 **/
-
-int mbot_initialize_fram(i2c_inst_t* i2c)
+int mbot_init_fram(void)
 {
+    i2c = I2C_FRAM;
+    i2c_init(i2c, 400 * 1000);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
     // This function is broken, because __get_device_id is broken
     // We can still read and write to mem, just not check on startup that its the right chip
     uint16_t manuf_id, prod_id;
@@ -112,36 +120,40 @@ int mbot_initialize_fram(i2c_inst_t* i2c)
     return 0;
 }
 
-int mbot_read_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
+int mbot_read_fram(uint16_t addr, size_t length, uint8_t* data)
 {
+    uint32_t irq_status = save_and_disable_interrupts(); //Prevent IMU interrupts
     int ret = __i2c_fram_read_bytes(i2c, addr, length, data);
+    restore_interrupts(irq_status); //Restore IRQs
     return ret;
 }
 
-int mbot_write_fram(i2c_inst_t* i2c, uint16_t addr, size_t length, uint8_t* data)
+int mbot_write_fram(uint16_t addr, size_t length, uint8_t* data)
 {
+    uint32_t irq_status = save_and_disable_interrupts(); //Prevent IMU interrupts
     int ret = __i2c_fram_write_bytes(i2c, addr, length, data);
+    restore_interrupts(irq_status); //Restore IRQs
     return ret;
 }
 
-int mbot_read_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t* data)
+int mbot_read_word_fram(uint16_t addr, uint16_t* data)
 {
     int ret = __i2c_fram_read_word(i2c, addr, data);
     return ret;
 }
 
-int mbot_write_word_fram(i2c_inst_t* i2c, uint16_t addr, uint16_t data)
+int mbot_write_word_fram(uint16_t addr, uint16_t data)
 {
     int ret = __i2c_fram_write_word(i2c, addr, data);
     return ret;
 }
 
-int mbot_erase_fram(i2c_inst_t* i2c)
+int mbot_erase_fram(void)
 {   
     int16_t i = 0;
     int ret = 0;
     while((i < MAXADDRESS) & (ret == 0)){
-        ret = mbot_write_word_fram(i2c, i, 0x0000);
+        ret = mbot_write_word_fram(i, 0x0000);
         i++;
     }
     if(ret != 0){

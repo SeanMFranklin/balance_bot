@@ -12,6 +12,7 @@
 #include <mbot/defs/mbot_pins.h>
 #include <mbot/defs/mbot_params.h>
 #include <mbot/fram/fram.h>
+#include <mbot/imu/imu.h>
 #include <rc/math/filter.h>
 #include <rc/mpu/mpu.h>
 #include <comms/common.h>
@@ -29,10 +30,7 @@
 // TODO: Decide which controller is used, open loop = 1, PID = 0
 #define OPEN_LOOP 1
 
-// These are for the older MPU9250
-// Will be replaced with BHI160
-static rc_mpu_data_t mpu_data;
-static rc_mpu_config_t mpu_config;
+extern mbot_bhy_data_t mbot_imu_data;
 
 // Global pointer to the i2c bus
 static i2c_inst_t *i2c;
@@ -42,8 +40,9 @@ float coeffs[12];  // 4 calibration parameters per motor
 
 enum drive_modes{
     MODE_MOTOR_PWM = 0,
-    MODE_MOTOR_VEL = 1,
-    MODE_MBOT_VEL = 2
+    MODE_MOTOR_VEL_OL = 1,
+    MODE_MOTOR_VEL_PID = 2,
+    MODE_MBOT_VEL = 3
 };
 
 /*
@@ -72,9 +71,6 @@ void mbot_vel_cmd_cb(serial_twist2D_t *msg);
 void mbot_motor_vel_cmd_cb(serial_mbot_motor_vel_t *msg);
 void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg);
 bool mbot_loop(repeating_timer_t *rt);
-void mbot_read_encoders(serial_mbot_encoders_t* encoders);
-void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel);
-
 void mbot_read_encoders(serial_mbot_encoders_t* encoders);
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel);
 

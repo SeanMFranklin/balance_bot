@@ -3,7 +3,7 @@ add_library(comms STATIC
   src/protocol.c
   src/listener.c
   src/topic_data.c
-  src/mbot_lcm_msgs_serial.c
+  #src/mbot_lcm_msgs_serial.c
 )
 
 target_link_libraries(comms

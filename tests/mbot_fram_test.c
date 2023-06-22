@@ -11,17 +11,10 @@ int main() {
     printf("Initializing!\n");
 
     bi_decl(bi_program_description("This is a test for the FRAM chip."));
-    i2c_inst_t *i2c = i2c0;
-    // Initialize I2C pins
-    i2c_init(i2c, 400 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
     // Make the I2C pins available to picotool
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 
-     if(mbot_initialize_fram(i2c)){
+     if(mbot_init_fram()){
          printf("ERROR: FRAM chip failed to initialize\n");
          return -1;
 
@@ -33,7 +26,7 @@ int main() {
         
         // Read initial state of memory
         for(int16_t addr = 0x00; addr < 0x0FF; addr += 0x10){
-            mbot_read_fram(i2c, addr, 16, &data[0]);
+            mbot_read_fram(addr, 16, &data[0]);
             printf("\nADDR:0x%4X", addr);
             for(int i=0; i<16; i++){
                 printf(" 0x%2X", data[i]);
@@ -43,21 +36,21 @@ int main() {
         // Program our message into memory
         sleep_ms(1000);
         for(int16_t addr = 0x00; addr < 0x0FF; addr += 0x10){
-            mbot_write_fram(i2c, addr, 16, &msg[0]);
+            mbot_write_fram(addr, 16, &msg[0]);
             for(int i=0; i<16; i++){
             }
         }
 
         // Read after programming memory
         for(int16_t addr = 0x00; addr < 0x0FF; addr += 0x10){
-            mbot_read_fram(i2c, addr, 16, &data[0]);
+            mbot_read_fram(addr, 16, &data[0]);
             printf("\nADDR:0x%4X", addr);
             for(int i=0; i<16; i++){
                 printf(" 0x%2X", data[i]);
             }
         }
         // Erase all data
-        mbot_erase_fram(i2c);
+        mbot_erase_fram();
         sleep_ms(1000);
     }
 }

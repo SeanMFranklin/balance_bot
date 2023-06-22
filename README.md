@@ -46,6 +46,32 @@ cmake ..
 make
 ```
 
+## Using GDB on the Pico
+
+As long as the SWD wires are connected to the Raspberry Pi (see above section on main branch), you can use GDB on the Pico to help debug your current firmware or test program.
+
+Note: make sure that the elf file was built using the `-DCMAKE_BUILD_TYPE=Debug` flag. If the file was built for Release, the optimization means most things won't be visible when you use the print command in gdb later.
+
+Build as normal, then upload using:
+```bash
+upload.sh path/to/elf/file.elf
+```
+
+In one window, run:
+```bash
+debug.sh path/to/elf/file.elf
+```
+
+Which starts up the GDB server and blocks this terminal until you Ctrl+C to quit the server. In another terminal, run:
+
+```bash
+debug_attach.sh path/to/elf/file.elf
+```
+
+Which attaches to the server and stops the program at the start of the main function, from where you can start debugging with GDB commands.
+
+TODO: If we really have time, try to get this working in VSCode.
+
 ## Installing picotool
 NOTE: We should add this to the setup.sh script, as it can be done as soon as the pico-sdk is cloned
 ```bash
@@ -89,6 +115,3 @@ Run the upload script which uses openocd.  This does not require puting the Pico
  ```bash
  upload.sh build/src/mbot.elf
  ```
-
-
-
