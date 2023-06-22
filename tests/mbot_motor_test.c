@@ -38,17 +38,17 @@ int main() {
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     int freq = 5000;
     int motor = 0;
-    mbot_motor_init_freq(motor, 10000);
-    blink();
-    mbot_motor_set_duty(motor, 1.0);
-    sleep_ms(2000);
-    mbot_motor_set_duty(motor, 0);
-    sleep_ms(1000);
-    mbot_motor_set_duty(motor, -0.5);
-    sleep_ms(2000);
-    mbot_motor_set_duty(motor, -0);
-    sleep_ms(500);
-
+    // mbot_motor_init_freq(motor, 10000);
+    // blink();
+    // mbot_motor_set_duty(motor, 1.0);
+    // sleep_ms(2000);
+    // mbot_motor_set_duty(motor, 0);
+    // sleep_ms(1000);
+    // mbot_motor_set_duty(motor, -0.5);
+    // sleep_ms(2000);
+    // mbot_motor_set_duty(motor, -0);
+    // sleep_ms(500);
+    mbot_motor_init_freq(0, freq);
     mbot_motor_init_freq(1, freq);
     mbot_motor_init_freq(2, freq);
 
@@ -80,20 +80,20 @@ void drive_motor_up_down(int motor) {
     printf("\tForward\n");
     for (; d < 1.0; d += 0.01) {
         mbot_motor_set_duty(motor, d);
-        sleep_ms(50);
+        sleep_ms(25);
     }
     for (; d > 0.0; d -= 0.01) {
         mbot_motor_set_duty(motor, d);
-        sleep_ms(50);
+        sleep_ms(25);
     }
     printf("\tBackward\n");
     for (; d > -1.0; d -= 0.01) {
         mbot_motor_set_duty(motor, d);
-        sleep_ms(50);
+        sleep_ms(25);
     }
     for (; d < 0.0; d += 0.01) {
         mbot_motor_set_duty(motor, d);
-        sleep_ms(50);
+        sleep_ms(25);
     }
 }
 
