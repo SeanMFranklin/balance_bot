@@ -71,3 +71,47 @@ debug_attach.sh path/to/elf/file.elf
 Which attaches to the server and stops the program at the start of the main function, from where you can start debugging with GDB commands.
 
 TODO: If we really have time, try to get this working in VSCode.
+
+## Installing picotool
+NOTE: We should add this to the setup.sh script, as it can be done as soon as the pico-sdk is cloned
+```bash
+wget https://github.com/raspberrypi/picotool/archive/refs/tags/1.1.1.zip
+unzip 1.1.1.zip
+cd picotool-1.1.1
+mkdir build && cd build
+export PICO_SDK_PATH=~/mbot_ws/mbot_firmware/lib/pico-sdk
+cmake ..
+make
+sudo make install
+```
+
+## Installing openocd and gdb-multiarch
+NoteL We should add this to the setub.sh script
+```bash
+sudo apt-get install libftdi-dev gdb-multiarch
+git clone https://github.com/raspberrypi/openocd.git --recursive --branch rp2040 --depth=1
+cd openocd
+./bootstrap
+./configure --enable-ftdi --enable-sysfsgpio --enable-bcm2835gpio
+make -j4
+sudo make install
+```
+
+## Uploading firmware to the pico
+There are a few ways to upload firmware, using the bootload partition on the pico, using picotool or using the upload.sh script and openocd.
+
+### Bootloader
+Plug in the pico while holding the BOOTLOAD button.  The pico will be mounted as a drive.  Copy the mbot.uf2 file over to the drive.
+
+### picotool
+Plug in the pico while holding the BOOTLOAD button.  Run:
+```bash
+picotool load build/src/mbot.uf2
+picotool reboot
+```
+
+### upload.sh and openocd
+Run the upload script which uses openocd.  This does not require puting the Pico into bootloader mode.  You must have the SWD wires (SWDIO, SWGND, and SWCLK) connected to GPIO 24 (Pin 18), GND (Pin 20) and GPIO 25 (Pin 22) on the Raspberry Pi.  Note, when using the upload script and openocd, you upload the .elf firmware file, not the .uf2 firmware file, they are just a different format, but the same firmware.
+ ```bash
+ upload.sh build/src/mbot.elf
+ ```
