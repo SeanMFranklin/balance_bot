@@ -12,6 +12,8 @@ uint16_t bytes_read = 0;
 uint64_t time_now;
 static mbot_bhy_data_t* data_ptr;
 
+static uint16_t numsample = 0;
+
 // Private functions
 void _imu_callback(uint gpio, uint32_t events);
 void _bhy_dump_status(void);
@@ -38,7 +40,8 @@ void _imu_callback(uint gpio, uint32_t events) {
     //time_now = to_us_since_boot(get_absolute_time());
     bhy_data_generic_t fifo_packet;
     bhy_data_type_t packet_type;
-    for(int i=0; i<5; i++){
+    BHY_RETURN_FUNCTION_TYPE result;
+    /*for(int i=0; i<5; i++){
         bhy_read_fifo(fifo + bytes_left_in_fifo, FIFO_SIZE - bytes_left_in_fifo, &bytes_read, &bytes_remaining);
         bytes_read += bytes_left_in_fifo;
         fifoptr = fifo;
@@ -48,12 +51,39 @@ void _imu_callback(uint gpio, uint32_t events) {
         }
     }
     if (bytes_remaining){
-        /* shifts the remaining bytes to the beginning of the buffer */
+        // shifts the remaining bytes to the beginning of the buffer 
         while (bytes_left_in_fifo < bytes_read)
         {
             fifo[bytes_left_in_fifo++] = *(fifoptr++);
         }
-    }
+    }*/
+    do{
+
+        bhy_read_fifo(fifo + bytes_left_in_fifo, FIFO_SIZE - bytes_left_in_fifo, &bytes_read, &bytes_remaining);
+        bytes_read += bytes_left_in_fifo;
+        fifoptr = fifo;
+        packet_type=BHY_DATA_TYPE_PADDING;
+        do{
+            result = bhy_parse_next_fifo_packet(&fifoptr, &bytes_read, &fifo_packet, &packet_type);
+            /* prints all the debug packets */
+            // if (packet_type == BHY_DATA_TYPE_DEBUG)
+            // {
+            //     bhy_print_debug_packet(&fifo_packet.data_debug, bhy_printf);
+            // }
+
+        }while ((result == BHY_SUCCESS) && (bytes_read > (bytes_remaining ? MAX_PACKET_LENGTH : 0)));
+
+        bytes_left_in_fifo = 0;
+
+        if(bytes_remaining){
+        /* shifts the remaining bytes to the beginning of the buffer */
+            while (bytes_left_in_fifo < bytes_read)
+            {
+                fifo[bytes_left_in_fifo++] = *(fifoptr++);
+            }
+        }
+    }while(bytes_remaining);
+    numsample++;
     //uint64_t time_end = to_us_since_boot(get_absolute_time());
     //int32_t period =  (int32_t)(time_now - last_time)/1000;
     //int32_t time_int =  (int32_t)(time_end - time_now);
@@ -158,6 +188,8 @@ void mbot_imu_print(mbot_bhy_data_t data){
     printf("  RPY RAD| X: %-3.3f | Y: %-3.3f | Z: %-3.3f |\n", data.rpy[0], data.rpy[1], data.rpy[2]);
     printf(" QUAT RAW| W: %5d | X: %5d | Y: %5d | Z: %5d |\n", data.raw_quat[0], data.raw_quat[1], data.raw_quat[2], data.raw_quat[3]);
     printf("QUAT NORM| W: %-3.4f | X: %-3.4f | Y: %-3.4f | Z: %-3.4f |\n", data.quat[0], data.quat[1], data.quat[2], data.quat[3]);
+    printf("numsample since last print: %d\n",numsample);
+    numsample = 0;
 }
 
 void _bhy_dump_status(void){
