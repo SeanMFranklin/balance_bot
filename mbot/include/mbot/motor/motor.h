@@ -35,6 +35,11 @@ static uint16_t motor_ph[4] = {M0_PH, M1_PH, M2_PH, M3_PH}; //DIR
 int mbot_motor_init_freq(uint8_t ch, uint16_t freq);
 
 /**
+ * @brief Initialize ADC3 to read motor driver voltage. Must be called before mbot_motor_read_voltage.
+ */
+void mbot_motor_adc_init();
+
+/**
  * @brief Initialize motor with default frequency
  * 
  * @param ch Channel number of the motor
@@ -67,6 +72,13 @@ int mbot_motor_cleanup(uint8_t ch);
  * @return int Returns MBOT_OK on success, MBOT_ERROR on failure
  */
 int mbot_motor_set_duty(uint8_t ch, float duty);
+
+/**
+ * @brief Returns voltage for motor driver read from ADC3 on Pico+ boards
+ * 
+ * @return float motor driver voltage in volts
+ */
+float mbot_motor_read_voltage();
 
 // These would require PMODE=HIGH on DRV8874
 // int mbot_motor_free_spin(uint8_t motor_num);

@@ -6,6 +6,7 @@
 #include <hardware/pwm.h>
 #include <mbot/defs/mbot_pins.h>
 #include <mbot/defs/mbot_params.h>
+#include "hardware/adc.h"
 
 int mbot_motor_init_freq(uint8_t ch, uint16_t freq) {
     gpio_init(motor_ph[ch]);
@@ -48,6 +49,12 @@ int mbot_motor_init(uint8_t ch) {
     return mbot_motor_init_freq(ch, f);
 }
 
+void mbot_motor_adc_init(){
+    adc_init();
+    adc_gpio_init(29);
+    adc_select_input(3);
+}
+
 int mbot_motor_cleanup(uint8_t ch) {
     uint16_t slice = pwm_gpio_to_slice_num(motor_en[ch]);
     pwm_set_enabled(slice, false);
@@ -82,4 +89,10 @@ int mbot_motor_set_duty(uint8_t ch, float duty) {
     pwm_set_chan_level(slice, pwm_chan, level);
     // printf("[DEBUG] setting pwm slice: %d, channel: %d, level: %d dir: %d\n", slice, pwm_chan, level, direction);
     return MBOT_OK;
+}
+
+float mbot_motor_read_voltage(){
+    // 12-bit conversion, assume max value == ADC_VREF == 3.3 V; ADC3 is 1/5 of VMOT on schematic
+    const float conversion_factor = 3.3f * 5 / (1 << 12);
+    return adc_read() * conversion_factor;
 }
