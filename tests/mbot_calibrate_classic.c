@@ -97,7 +97,7 @@ int main() {
     mbot_motor_init(1);
     mbot_motor_init(2);
     mbot_encoder_init();
-    mbot_init_fram();
+    mbot_init_fram(true);
     printf("\nWaiting for 5 seconds...\n");
     sleep_ms(5000);
     // find encoder polarity
@@ -117,7 +117,7 @@ int main() {
     
     //printf("\nTesting Motor Polarity...\n");
     mbot_imu_config = mbot_imu_default_config();
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config, false);
     float accel_x0 = 0.0;
     float accel_y0 = 0.0;
     sleep_ms(1000);

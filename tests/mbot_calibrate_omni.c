@@ -95,7 +95,7 @@ int main() {
     mbot_motor_init(1);
     mbot_motor_init(2);
     mbot_encoder_init();
-    mbot_init_fram();
+    mbot_init_fram(true);
     printf("\nWaiting for 3 seconds...\n");
     sleep_ms(3000);
 
@@ -134,7 +134,7 @@ int main() {
      *************************************************/
     printf("\nTesting Motor Polarity...\n");
     mbot_imu_config = mbot_imu_default_config();
-    int imu_init_status = mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    int imu_init_status = mbot_imu_init(&mbot_imu_data, mbot_imu_config, false);
     if(imu_init_status == 0){
         // IMU available
         //  find motor polarity

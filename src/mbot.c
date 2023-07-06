@@ -170,11 +170,11 @@ int mbot_init_hardware(void){
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     mbot_imu_config = mbot_imu_default_config();
-    mbot_imu_config.sample_rate = 25;
+    mbot_imu_config.sample_rate = 200;
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
-    //mbot_imu_init(&mbot_imu_data, mbot_imu_config);
-    mbot_init_fram();
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config, true);
+    mbot_init_fram(false);
     return MBOT_OK;
 }
 
@@ -235,7 +235,7 @@ bool mbot_loop(repeating_timer_t *rt)
     global_utime = to_us_since_boot(get_absolute_time()) + timestamp_offset;
     mbot_vel.utime = global_utime;
     mbot_read_encoders(&mbot_encoders);
-    //mbot_read_imu(&mbot_imu);
+    mbot_read_imu(&mbot_imu);
     mbot_calculate_motor_vel(mbot_encoders, &mbot_motor_vel);
     
     if(params.robot_type == 1){
@@ -406,7 +406,7 @@ int main()
             gpio_put(LED_PIN, 0);
         }
         // Print State
-        // mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
+        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
         sleep_ms(200);  
         counter++;
     }
