@@ -107,11 +107,11 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg)
 
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel){
     float conversion = (1.0 / params.gear_ratio) * (1.0 / params.encoder_resolution) * 1E6f * 2.0 * M_PI;
-    motor_vel->velocity[0] = params.encoder_polarity[0] * (conversion / encoders.delta_time) * encoders.delta_ticks[0];
+    motor_vel->velocity[params.mot_left] = params.encoder_polarity[params.mot_left] * (conversion / encoders.delta_time) * encoders.delta_ticks[params.mot_left];
     if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
-        motor_vel->velocity[1] = params.encoder_polarity[1] * (conversion / encoders.delta_time) * encoders.delta_ticks[1];
+        motor_vel->velocity[params.mot_back] = params.encoder_polarity[params.mot_back] * (conversion / encoders.delta_time) * encoders.delta_ticks[params.mot_back];
     }
-    motor_vel->velocity[2] = params.encoder_polarity[2] * (conversion / encoders.delta_time) * encoders.delta_ticks[2];
+    motor_vel->velocity[params.mot_right] = params.encoder_polarity[params.mot_right] * (conversion / encoders.delta_time) * encoders.delta_ticks[params.mot_right];
 }
 
 void mbot_read_imu(serial_mbot_imu_t *imu){
