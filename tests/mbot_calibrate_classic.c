@@ -94,7 +94,6 @@ int main() {
     printf("\n\n\nInitializing...\n");
     bi_decl(bi_program_description("This will calibrate an MBot and print a diagnostic report"));
     mbot_motor_init(0);
-    mbot_motor_init(1);
     mbot_motor_init(2);
     mbot_encoder_init();
     mbot_init_fram();
