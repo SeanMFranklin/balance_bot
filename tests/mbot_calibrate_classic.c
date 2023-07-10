@@ -66,7 +66,7 @@ void least_squares_fit(float* pwms, float* speeds, int n, float* m, float* b) {
 void print_mbot_params_dd(const mbot_params_t* params) {
     printf("Robot Type: %d\n", params->robot_type);
     printf("Wheel Radius: %f\n", params->wheel_radius);
-    printf("Wheel Base: %f\n", params->wheel_base);
+    printf("Wheel Base Radius: %f\n", params->wheel_base_radius);
     printf("Gear Ratio: %f\n", params->gear_ratio);
     printf("Encoder Resolution: %f\n", params->encoder_resolution);
     printf("Motor Left: %d\n", params->mot_left);
@@ -87,7 +87,7 @@ int main() {
     params.robot_type = DIFFERENTIAL_DRIVE;
     params.gear_ratio = GEAR_RATIO;
     params.encoder_resolution = ENCODER_RES;
-    params.wheel_base = WHEEL_BASE;
+    params.wheel_base_radius = WHEEL_BASE_RADIUS;
     params.wheel_radius = WHEEL_RADIUS;
     stdio_init_all();
     sleep_ms(5000); // quick sleep so we can catch the bootup process in terminal

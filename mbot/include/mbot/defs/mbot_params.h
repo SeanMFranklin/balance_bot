@@ -25,7 +25,7 @@
 // MBot Classic Parameters
 #define WHEEL_DIAMETER          0.0837
 #define WHEEL_RADIUS            0.04183
-#define WHEEL_BASE              0.15571
+#define WHEEL_BASE_RADIUS              0.07786
 
 // MBot Omni Parameters
 // #define OMNI_OLD_BASE_RADIUS        0.094     // radius of wheel centers (old bot)
@@ -44,7 +44,7 @@
 typedef struct mbot_params_t{
     int robot_type;
     float wheel_radius;
-    float wheel_base;
+    float wheel_base_radius;
     float gear_ratio;
     float encoder_resolution;
     int mot_left;

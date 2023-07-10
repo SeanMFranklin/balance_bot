@@ -31,7 +31,7 @@ mbot_bhy_config_t mbot_imu_config;
 void print_mbot_params(const mbot_params_t* params) {
     printf("Robot Type: %d\n", params->robot_type);
     printf("Wheel Radius: %f\n", params->wheel_radius);
-    printf("Wheel Base: %f\n", params->wheel_base);
+    printf("Wheel Base Radius: %f\n", params->wheel_base_radius);
     printf("Gear Ratio: %f\n", params->gear_ratio);
     printf("Encoder Resolution: %f\n", params->encoder_resolution);
     printf("Motor Left: %d\n", params->mot_left);
@@ -300,9 +300,9 @@ bool mbot_loop(repeating_timer_t *rt)
         else if(drive_mode == MODE_MBOT_VEL){
             //TODO: open loop for now - implement closed loop controller
             if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
-                mbot_motor_vel_cmd.velocity[params.mot_left] = (SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
-                mbot_motor_vel_cmd.velocity[params.mot_right] = (-SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
-                mbot_motor_vel_cmd.velocity[params.mot_back] = (mbot_vel_cmd.vy - params.wheel_base * mbot_vel_cmd.wz) / params.wheel_radius;
+                mbot_motor_vel_cmd.velocity[params.mot_left] = (SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base_radius * mbot_vel_cmd.wz) / params.wheel_radius;
+                mbot_motor_vel_cmd.velocity[params.mot_right] = (-SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base_radius * mbot_vel_cmd.wz) / params.wheel_radius;
+                mbot_motor_vel_cmd.velocity[params.mot_back] = (mbot_vel_cmd.vy - params.wheel_base_radius * mbot_vel_cmd.wz) / params.wheel_radius;
                 float vel_left_comp = params.motor_polarity[params.mot_left] * mbot_motor_vel_cmd.velocity[params.mot_left];
                 float vel_right_comp = params.motor_polarity[params.mot_right] * mbot_motor_vel_cmd.velocity[params.mot_right];
                 float vel_back_comp = params.motor_polarity[params.mot_back] * mbot_motor_vel_cmd.velocity[params.mot_back];
@@ -312,8 +312,8 @@ bool mbot_loop(repeating_timer_t *rt)
                 mbot_motor_pwm_cmd.pwm[params.mot_back] = _calibrated_pwm_from_vel_cmd(vel_back_comp, params.mot_back);
                 mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(vel_left_comp, params.mot_left);
             }else if(MBOT_DRIVE_TYPE == DIFFERENTIAL_DRIVE){
-                mbot_motor_vel_cmd.velocity[params.mot_left] = (mbot_vel_cmd.vx - WHEEL_BASE * mbot_vel_cmd.wz) / WHEEL_RADIUS;
-                mbot_motor_vel_cmd.velocity[params.mot_right] = (-mbot_vel_cmd.vx - WHEEL_BASE * mbot_vel_cmd.wz) / WHEEL_RADIUS;
+                mbot_motor_vel_cmd.velocity[params.mot_left] = (mbot_vel_cmd.vx - WHEEL_BASE_RADIUS * mbot_vel_cmd.wz) / WHEEL_RADIUS;
+                mbot_motor_vel_cmd.velocity[params.mot_right] = (-mbot_vel_cmd.vx - WHEEL_BASE_RADIUS * mbot_vel_cmd.wz) / WHEEL_RADIUS;
                 
                 float vel_left_comp = params.motor_polarity[params.mot_left] * mbot_motor_vel_cmd.velocity[params.mot_left];
                 float vel_right_comp = params.motor_polarity[params.mot_right] * mbot_motor_vel_cmd.velocity[params.mot_right];
