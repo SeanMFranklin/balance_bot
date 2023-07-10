@@ -23,9 +23,9 @@
 #define ACKERMAN_DRIVE 3
 
 // MBot Classic Parameters
-#define WHEEL_DIAMETER          0.0837
-#define WHEEL_RADIUS            0.04183
-#define WHEEL_BASE_RADIUS              0.07786
+#define DIFF_WHEEL_DIAMETER          0.0837
+#define DIFF_WHEEL_RADIUS            0.04183
+#define DIFF_BASE_RADIUS             0.07786
 
 // MBot Omni Parameters
 // #define OMNI_OLD_BASE_RADIUS        0.094     // radius of wheel centers (old bot)

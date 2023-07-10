@@ -138,17 +138,16 @@ void mbot_read_encoders(serial_mbot_encoders_t* encoders){
     int64_t delta_time = global_utime - encoders->utime;
     encoders->utime = global_utime;
     encoders->delta_time = delta_time;
+
     encoders->ticks[params.mot_right] = mbot_encoder_read_count(params.mot_right);
+    encoders->delta_ticks[params.mot_right] = mbot_encoder_read_delta(params.mot_right);
+    encoders->ticks[params.mot_left] = mbot_encoder_read_count(params.mot_left);
+    encoders->delta_ticks[params.mot_left] = mbot_encoder_read_delta(params.mot_left);
+
     if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
         encoders->ticks[params.mot_back] = mbot_encoder_read_count(params.mot_back);
-    }
-    encoders->ticks[params.mot_left] = mbot_encoder_read_count(params.mot_left);
-    encoders->delta_ticks[params.mot_right] = mbot_encoder_read_delta(params.mot_right);
-    if (MBOT_DRIVE_TYPE == OMNI_120_DRIVE)
-    {
         encoders->delta_ticks[params.mot_back] = mbot_encoder_read_delta(params.mot_back);
     }
-        encoders->delta_ticks[params.mot_left] = mbot_encoder_read_delta(params.mot_left);
 }
 
 int mbot_init_pico(void){
@@ -176,7 +175,7 @@ int mbot_init_hardware(void){
     }
     mbot_motor_init(2);
     printf("initializinging encoders...\n");
-    mbot_encoder_init(); //TODO do not init motor 1 enc when motor 1 unused
+    mbot_encoder_init();
 
     // Initialize LED
     printf("Starting heartbeat LED...\n");
@@ -243,6 +242,7 @@ void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, se
     printf("\r%s\n", buf);
 }
 
+//Helper function to use slope + intercept from calibration to generate a PWM command.
 float _calibrated_pwm_from_vel_cmd(float vel_cmd, int motor_idx){
     if (vel_cmd > 0.0)
     {
@@ -285,19 +285,13 @@ bool mbot_loop(repeating_timer_t *rt)
     if (global_comms_status == COMMS_OK)
     {
         if(drive_mode == MODE_MOTOR_VEL_OL){
+            mbot_motor_pwm.utime = global_utime;
+            mbot_motor_pwm_cmd.pwm[params.mot_right] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_right], params.mot_right);
+            mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_left], params.mot_left);
             if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
-                mbot_motor_pwm.utime = global_utime;
-                mbot_motor_pwm_cmd.pwm[params.mot_right] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_right], params.mot_right);
                 mbot_motor_pwm_cmd.pwm[params.mot_back] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_back], params.mot_back);
-                mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_left], params.mot_left);
-            }else if(MBOT_DRIVE_TYPE == DIFFERENTIAL_DRIVE){
-                mbot_motor_pwm.utime = global_utime;
-                mbot_motor_pwm_cmd.pwm[params.mot_right] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_right], params.mot_right);
-                mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(mbot_motor_vel_cmd.velocity[params.mot_left], params.mot_left);
             }
-        }
-
-        else if(drive_mode == MODE_MBOT_VEL){
+        }else if(drive_mode == MODE_MBOT_VEL){
             //TODO: open loop for now - implement closed loop controller
             if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
                 mbot_motor_vel_cmd.velocity[params.mot_left] = (SQRT3 / 2.0 * mbot_vel_cmd.vx - 0.5 * mbot_vel_cmd.vy - params.wheel_base_radius * mbot_vel_cmd.wz) / params.wheel_radius;
@@ -312,8 +306,8 @@ bool mbot_loop(repeating_timer_t *rt)
                 mbot_motor_pwm_cmd.pwm[params.mot_back] = _calibrated_pwm_from_vel_cmd(vel_back_comp, params.mot_back);
                 mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(vel_left_comp, params.mot_left);
             }else if(MBOT_DRIVE_TYPE == DIFFERENTIAL_DRIVE){
-                mbot_motor_vel_cmd.velocity[params.mot_left] = (mbot_vel_cmd.vx - WHEEL_BASE_RADIUS * mbot_vel_cmd.wz) / WHEEL_RADIUS;
-                mbot_motor_vel_cmd.velocity[params.mot_right] = (-mbot_vel_cmd.vx - WHEEL_BASE_RADIUS * mbot_vel_cmd.wz) / WHEEL_RADIUS;
+                mbot_motor_vel_cmd.velocity[params.mot_left] = (mbot_vel_cmd.vx - DIFF_BASE_RADIUS * mbot_vel_cmd.wz) / DIFF_WHEEL_RADIUS;
+                mbot_motor_vel_cmd.velocity[params.mot_right] = (-mbot_vel_cmd.vx - DIFF_BASE_RADIUS * mbot_vel_cmd.wz) / DIFF_WHEEL_RADIUS;
                 
                 float vel_left_comp = params.motor_polarity[params.mot_left] * mbot_motor_vel_cmd.velocity[params.mot_left];
                 float vel_right_comp = params.motor_polarity[params.mot_right] * mbot_motor_vel_cmd.velocity[params.mot_right];
@@ -322,8 +316,7 @@ bool mbot_loop(repeating_timer_t *rt)
                 mbot_motor_pwm_cmd.pwm[params.mot_right] = _calibrated_pwm_from_vel_cmd(vel_right_comp, params.mot_right);
                 mbot_motor_pwm_cmd.pwm[params.mot_left] = _calibrated_pwm_from_vel_cmd(vel_left_comp, params.mot_left);
             }
-        }
-        else {
+        }else {
             drive_mode = MODE_MOTOR_PWM;
             mbot_motor_pwm.utime = global_utime;
         }
@@ -331,14 +324,13 @@ bool mbot_loop(repeating_timer_t *rt)
         // Set motors
         mbot_motor_set_duty(params.mot_right, mbot_motor_pwm_cmd.pwm[params.mot_right]);
         mbot_motor_pwm.pwm[params.mot_right] = mbot_motor_pwm_cmd.pwm[params.mot_right];
+        mbot_motor_set_duty(params.mot_left, mbot_motor_pwm_cmd.pwm[params.mot_left]);
+        mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[params.mot_left];
 
         if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
             mbot_motor_set_duty(params.mot_back, mbot_motor_pwm_cmd.pwm[params.mot_back]);
             mbot_motor_pwm.pwm[params.mot_back] = mbot_motor_pwm_cmd.pwm[params.mot_back];
         }
-
-        mbot_motor_set_duty(params.mot_left, mbot_motor_pwm_cmd.pwm[params.mot_left]);
-        mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[params.mot_left];
 
         // write the encoders to serial
         comms_write_topic(MBOT_ENCODERS, &mbot_encoders);
