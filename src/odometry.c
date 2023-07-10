@@ -2,9 +2,9 @@
 #include <math.h>
 
 int mbot_calculate_diff_body_vel(float wheel_left_vel, float wheel_right_vel, serial_twist2D_t *mbot_vel){
-    mbot_vel->vx =  WHEEL_RADIUS * (wheel_left_vel + wheel_right_vel) / 2.0f;
+    mbot_vel->vx =  WHEEL_RADIUS * (wheel_left_vel - wheel_right_vel) / 2.0f;
     mbot_vel->vy = 0;
-    mbot_vel->wz =  WHEEL_RADIUS * (wheel_right_vel - wheel_left_vel) / WHEEL_BASE;
+    mbot_vel->wz =  WHEEL_RADIUS * (-wheel_left_vel - wheel_right_vel) / WHEEL_BASE;
     return 0; // Return 0 to indicate success
 }
 int mbot_calculate_diff_body_vel_imu(float wheel_left_vel, float wheel_right_vel, serial_mbot_imu_t imu, serial_twist2D_t *mbot_vel){

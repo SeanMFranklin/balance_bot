@@ -138,17 +138,17 @@ void mbot_read_encoders(serial_mbot_encoders_t* encoders){
     int64_t delta_time = global_utime - encoders->utime;
     encoders->utime = global_utime;
     encoders->delta_time = delta_time;
-    encoders->ticks[0] = mbot_encoder_read_count(0);
+    encoders->ticks[params.mot_right] = mbot_encoder_read_count(params.mot_right);
     if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
-        encoders->ticks[1] = mbot_encoder_read_count(1);
+        encoders->ticks[params.mot_back] = mbot_encoder_read_count(params.mot_back);
     }
-    encoders->ticks[2] = mbot_encoder_read_count(2);
-    encoders->delta_ticks[0] = mbot_encoder_read_delta(0);
+    encoders->ticks[params.mot_left] = mbot_encoder_read_count(params.mot_left);
+    encoders->delta_ticks[params.mot_right] = mbot_encoder_read_delta(params.mot_right);
     if (MBOT_DRIVE_TYPE == OMNI_120_DRIVE)
     {
-        encoders->delta_ticks[1] = mbot_encoder_read_delta(1);
+        encoders->delta_ticks[params.mot_back] = mbot_encoder_read_delta(params.mot_back);
     }
-        encoders->delta_ticks[2] = mbot_encoder_read_delta(2);
+        encoders->delta_ticks[params.mot_left] = mbot_encoder_read_delta(params.mot_left);
 }
 
 int mbot_init_pico(void){
@@ -208,7 +208,7 @@ int mbot_init_comms(void){
 }
 
 void mbot_print_state(serial_mbot_imu_t imu, serial_mbot_encoders_t encoders, serial_pose2D_t odometry, serial_mbot_motor_vel_t motor_vel){
-    //printf("\033[2J\r");
+    printf("\033[2J\r");
     if(global_comms_status == COMMS_OK){
         printf("| \033[32m COMMS OK \033[0m TIME: %lld |\n", global_utime);
     }
@@ -329,15 +329,15 @@ bool mbot_loop(repeating_timer_t *rt)
         }
 
         // Set motors
-        mbot_motor_set_duty(0, mbot_motor_pwm_cmd.pwm[0]);
+        mbot_motor_set_duty(params.mot_right, mbot_motor_pwm_cmd.pwm[params.mot_right]);
         mbot_motor_pwm.pwm[params.mot_right] = mbot_motor_pwm_cmd.pwm[params.mot_right];
 
         if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
-            mbot_motor_set_duty(1, mbot_motor_pwm_cmd.pwm[1]);
+            mbot_motor_set_duty(params.mot_back, mbot_motor_pwm_cmd.pwm[params.mot_back]);
             mbot_motor_pwm.pwm[params.mot_back] = mbot_motor_pwm_cmd.pwm[params.mot_back];
         }
 
-        mbot_motor_set_duty(2, mbot_motor_pwm_cmd.pwm[2]);
+        mbot_motor_set_duty(params.mot_left, mbot_motor_pwm_cmd.pwm[params.mot_left]);
         mbot_motor_pwm.pwm[params.mot_left] = mbot_motor_pwm_cmd.pwm[params.mot_left];
 
         // write the encoders to serial
@@ -398,7 +398,7 @@ int main()
             gpio_put(LED_PIN, 0);
         }
         // Print State
-        // mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
+        mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
         sleep_ms(200);  
         counter++;
     }
