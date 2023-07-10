@@ -87,8 +87,8 @@ int main() {
     params.robot_type = DIFFERENTIAL_DRIVE;
     params.gear_ratio = GEAR_RATIO;
     params.encoder_resolution = ENCODER_RES;
-    params.wheel_base_radius = WHEEL_BASE_RADIUS;
-    params.wheel_radius = WHEEL_RADIUS;
+    params.wheel_base_radius = DIFF_BASE_RADIUS;
+    params.wheel_radius = DIFF_WHEEL_RADIUS;
     stdio_init_all();
     sleep_ms(5000); // quick sleep so we can catch the bootup process in terminal
     printf("\n\n\nInitializing...\n");
@@ -286,8 +286,8 @@ int main() {
         sleep_ms(dt * 1000);
         duty_right[i] = -d;
         duty_left[i] = -d;
-        wheel_speed_right[i] = conv * params.encoder_resolution * params.encoder_polarity[mot_right] * mbot_encoder_read_delta(mot_right) / dt;
-        wheel_speed_left[i] = conv * params.encoder_resolution * params.encoder_polarity[mot_left] * mbot_encoder_read_delta(mot_left) / dt;
+        wheel_speed_right[i] = conv * params.encoder_polarity[mot_right] * mbot_encoder_read_delta(mot_right) / dt;
+        wheel_speed_left[i] = conv * params.encoder_polarity[mot_left] * mbot_encoder_read_delta(mot_left) / dt;
         printf("duty: %f, right: %f, left: %f\n", duty_right[i], wheel_speed_right[i], wheel_speed_left[i]);
     }
     
@@ -321,8 +321,8 @@ int main() {
         sleep_ms(dt * 1000);
         duty_right[i] = d;
         duty_left[i] = d;
-        wheel_speed_right[i] = conv * params.encoder_resolution * params.encoder_polarity[mot_right] * mbot_encoder_read_delta(mot_right) / dt;
-        wheel_speed_left[i] = conv * params.encoder_resolution * params.encoder_polarity[mot_left] * mbot_encoder_read_delta(mot_left) / dt;
+        wheel_speed_right[i] = conv * params.encoder_polarity[mot_right] * mbot_encoder_read_delta(mot_right) / dt;
+        wheel_speed_left[i] = conv * params.encoder_polarity[mot_left] * mbot_encoder_read_delta(mot_left) / dt;
         printf("duty: %f, right: %f, left: %f\n", duty_right[i], wheel_speed_right[i], wheel_speed_left[i]);
     }
 
