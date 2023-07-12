@@ -1,3 +1,4 @@
+include_directories(/usr/local/include)
 
 #mbot_dmp_test
 add_executable(mbot_dmp_test
@@ -121,6 +122,24 @@ target_link_libraries(mbot_motor_analyze
 pico_enable_stdio_usb(mbot_motor_analyze 1)
 pico_enable_stdio_uart(mbot_motor_analyze 0)
 pico_add_extra_outputs(mbot_motor_analyze)
+
+#mbot_calibrate_gyro
+add_executable(mbot_closed_loop_ctrler_test
+  mbot_closed_loop_ctrler_test.c
+)
+target_link_libraries(mbot_closed_loop_ctrler_test
+  pico_stdlib
+  pico_multicore
+  hardware_pwm
+  hardware_sync
+  hardware_i2c
+  hardware_flash
+  rclib
+  comms
+)
+pico_enable_stdio_usb(mbot_closed_loop_ctrler_test 1)
+pico_enable_stdio_uart(mbot_closed_loop_ctrler_test 0)
+pico_add_extra_outputs(mbot_closed_loop_ctrler_test)
 
 #I control tests
 add_executable(mbot_current_control_test
