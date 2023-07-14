@@ -91,6 +91,20 @@ pico_enable_stdio_usb(mbot_bhy_test 1)
 pico_enable_stdio_uart(mbot_bhy_test 0)
 pico_add_extra_outputs(mbot_bhy_test)
 
+#BARO-TEST
+add_executable(mbot_barometer_test
+  mbot_barometer_test.c
+)
+target_link_libraries(mbot_barometer_test
+  mbotlib
+  pico_stdlib
+  hardware_i2c
+  rclib
+)
+pico_enable_stdio_usb(mbot_barometer_test 1)
+pico_enable_stdio_uart(mbot_barometer_test 0)
+pico_add_extra_outputs(mbot_barometer_test)
+
 #MOTOR-TEST
 add_executable(mbot_motor_test
   mbot_motor_test.c
