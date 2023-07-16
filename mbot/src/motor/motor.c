@@ -92,7 +92,7 @@ int mbot_motor_set_duty(uint8_t ch, float duty) {
 }
 
 float mbot_motor_read_voltage(){
-    // 12-bit conversion, assume max value == ADC_VREF == 3.3 V; ADC3 is 1/5 of VMOT on schematic
-    const float conversion_factor = 3.3f * 5 / (1 << 12);
+    // 12-bit conversion, assume ADC_VREF == 3.0 V; ADC3 is 1/5 of VMOT on schematic
+    const float conversion_factor = 3.0f * 5 / (1 << 12);
     return adc_read() * conversion_factor;
 }
