@@ -1,208 +1,235 @@
-/*!
- *  @brief Example shows basic application of configuring and reading pressure.
- */
+/**
+ * Copyright (c) 2021 Raspberry Pi (Trading) Ltd.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ **/
+
+//Code adapted from pico-examples/i2c/bmp280_i2c, Jul 2023
 
 #include <stdio.h>
-#include <inttypes.h>
-#include <mbot/barometer/bmp280.h>
-#include <hardware/i2c.h>
-#include <pico/stdlib.h>
 
-void delay_ms(uint16_t period_ms);
-int8_t i2c_reg_write(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
-int8_t i2c_reg_read(uint8_t i2c_addr, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
-int8_t spi_reg_write(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
-int8_t spi_reg_read(uint8_t cs, uint8_t reg_addr, uint8_t *reg_data, uint16_t length);
-void print_rslt(const char api_name[], int8_t rslt);
+#include "hardware/i2c.h"
+#include "pico/binary_info.h"
+#include "pico/stdlib.h"
 
-// int main(void)
-// {
-//     int8_t rslt;
-//     struct bmp280_dev bmp;
-//     struct bmp280_config conf;
-//     struct bmp280_uncomp_data ucomp_data;
-//     uint32_t pres32, pres64;
-//     double pres;
+#include <mbot/barometer/barometer.h>
 
-//     /* Map the delay function pointer with the function responsible for implementing the delay */
-//     bmp.delay_ms = delay_ms;
+// device has default bus address of 0x76
+#define ADDR _u(0x76)
 
-//     /* Assign device I2C address based on the status of SDO pin (GND for PRIMARY(0x76) & VDD for SECONDARY(0x77)) */
-//     bmp.dev_id = BMP280_I2C_ADDR_PRIM;
+// hardware registers
+#define REG_CONFIG _u(0xF5)
+#define REG_CTRL_MEAS _u(0xF4)
+#define REG_RESET _u(0xE0)
 
-//     /* Select the interface mode as I2C */
-//     bmp.intf = BMP280_I2C_INTF;
+#define REG_TEMP_XLSB _u(0xFC)
+#define REG_TEMP_LSB _u(0xFB)
+#define REG_TEMP_MSB _u(0xFA)
 
-//     /* Map the I2C read & write function pointer with the functions responsible for I2C bus transfer */
-//     bmp.read = i2c_reg_read;
-//     bmp.write = i2c_reg_write;
+#define REG_PRESSURE_XLSB _u(0xF9)
+#define REG_PRESSURE_LSB _u(0xF8)
+#define REG_PRESSURE_MSB _u(0xF7)
 
-//     /* To enable SPI interface: comment the above 4 lines and uncomment the below 4 lines */
+// calibration registers
+#define REG_DIG_T1_LSB _u(0x88)
+#define REG_DIG_T1_MSB _u(0x89)
+#define REG_DIG_T2_LSB _u(0x8A)
+#define REG_DIG_T2_MSB _u(0x8B)
+#define REG_DIG_T3_LSB _u(0x8C)
+#define REG_DIG_T3_MSB _u(0x8D)
+#define REG_DIG_P1_LSB _u(0x8E)
+#define REG_DIG_P1_MSB _u(0x8F)
+#define REG_DIG_P2_LSB _u(0x90)
+#define REG_DIG_P2_MSB _u(0x91)
+#define REG_DIG_P3_LSB _u(0x92)
+#define REG_DIG_P3_MSB _u(0x93)
+#define REG_DIG_P4_LSB _u(0x94)
+#define REG_DIG_P4_MSB _u(0x95)
+#define REG_DIG_P5_LSB _u(0x96)
+#define REG_DIG_P5_MSB _u(0x97)
+#define REG_DIG_P6_LSB _u(0x98)
+#define REG_DIG_P6_MSB _u(0x99)
+#define REG_DIG_P7_LSB _u(0x9A)
+#define REG_DIG_P7_MSB _u(0x9B)
+#define REG_DIG_P8_LSB _u(0x9C)
+#define REG_DIG_P8_MSB _u(0x9D)
+#define REG_DIG_P9_LSB _u(0x9E)
+#define REG_DIG_P9_MSB _u(0x9F)
 
-//     /*
-//      * bmp.dev_id = 0;
-//      * bmp.read = spi_reg_read;
-//      * bmp.write = spi_reg_write;
-//      * bmp.intf = BMP280_SPI_INTF;
-//      */
-//     rslt = bmp280_init(&bmp);
-//     print_rslt(" bmp280_init status", rslt);
+// number of calibration registers to be read
+#define NUM_CALIB_PARAMS 24
 
-//     /* Always read the current settings before writing, especially when
-//      * all the configuration is not modified
-//      */
-//     rslt = bmp280_get_config(&conf, &bmp);
-//     print_rslt(" bmp280_get_config status", rslt);
-
-//     /* configuring the temperature oversampling, filter coefficient and output data rate */
-//     /* Overwrite the desired settings */
-//     conf.filter = BMP280_FILTER_COEFF_2;
-
-//     /* Pressure oversampling set at 4x */
-//     conf.os_pres = BMP280_OS_4X;
-
-//     /* Setting the output data rate as 1HZ(1000ms) */
-//     conf.odr = BMP280_ODR_1000_MS;
-//     rslt = bmp280_set_config(&conf, &bmp);
-//     print_rslt(" bmp280_set_config status", rslt);
-
-//     /* Always set the power mode after setting the configuration */
-//     rslt = bmp280_set_power_mode(BMP280_NORMAL_MODE, &bmp);
-//     print_rslt(" bmp280_set_power_mode status", rslt);
-//     while (1)
-//     {
-//         /* Reading the raw data from sensor */
-//         rslt = bmp280_get_uncomp_data(&ucomp_data, &bmp);
-
-//         /* Getting the compensated pressure using 32 bit precision */
-//         rslt = bmp280_get_comp_pres_32bit(&pres32, ucomp_data.uncomp_press, &bmp);
-
-//         /* Getting the compensated pressure using 64 bit precision */
-//         rslt = bmp280_get_comp_pres_64bit(&pres64, ucomp_data.uncomp_press, &bmp);
-
-//         /* Getting the compensated pressure as floating point value */
-//         rslt = bmp280_get_comp_pres_double(&pres, ucomp_data.uncomp_press, &bmp);
-//         printf("UP: %ld, P32: %ld, P64: %ld, P64N: %ld, P: %f\r\n",
-//                ucomp_data.uncomp_press,
-//                pres32,
-//                pres64,
-//                pres64 / 256,
-//                pres);
-//         bmp.delay_ms(1000); /* Sleep time between measurements = BMP280_ODR_1000_MS */
-//     }
-
-//     return 0;
-// }
-
-/*!
- *  @brief Function that creates a mandatory delay required in some of the APIs such as "bmg250_soft_reset",
- *      "bmg250_set_foc", "bmg250_perform_self_test"  and so on.
- *
- *  @param[in] period_ms  : the required wait time in milliseconds.
- *  @return void.
- *
- */
-void delay_ms(uint16_t period_ms)
+struct bmp280_calib_param
 {
-    sleep_ms(period_ms);
-}
+    // temperature params
+    uint16_t dig_t1;
+    int16_t dig_t2;
+    int16_t dig_t3;
 
-/*!
- *  @brief Function for writing the sensor's registers through I2C bus.
- *
- *  @param[in] i2c_addr : sensor I2C address.
- *  @param[in] reg_addr : Register address.
- *  @param[in] reg_data : Pointer to the data buffer whose value is to be written.
- *  @param[in] length   : No of bytes to write.
- *
- *  @return Status of execution
- *  @retval 0 -> Success
- *  @retval >0 -> Failure Info
- *
- */
-int8_t __i2c_reg_write(i2c_inst_t* i2c, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
+    // pressure params
+    uint16_t dig_p1;
+    int16_t dig_p2;
+    int16_t dig_p3;
+    int16_t dig_p4;
+    int16_t dig_p5;
+    int16_t dig_p6;
+    int16_t dig_p7;
+    int16_t dig_p8;
+    int16_t dig_p9;
+};
+
+struct bmp280_calib_param bmp280_params;
+
+#ifdef i2c_default
+void bmp280_init()
 {
-	if(i2c_write_blocking(i2c, BMP280_I2C_ADDR_PRIM, reg_data, length+1, false) == PICO_ERROR_GENERIC){
-		return -1;
-	}
-	return 0;
+    // use the "handheld device dynamic" optimal setting (see datasheet)
+    uint8_t buf[2];
+
+    // 500ms sampling time, x16 filter
+    const uint8_t reg_config_val = ((0x04 << 5) | (0x05 << 2)) & 0xFC;
+
+    // send register number followed by its corresponding value
+    buf[0] = REG_CONFIG;
+    buf[1] = reg_config_val;
+    i2c_write_blocking(i2c_default, ADDR, buf, 2, false);
+
+    // osrs_t x1, osrs_p x4, normal mode operation
+    const uint8_t reg_ctrl_meas_val = (0x01 << 5) | (0x03 << 2) | (0x03);
+    buf[0] = REG_CTRL_MEAS;
+    buf[1] = reg_ctrl_meas_val;
+    i2c_write_blocking(i2c_default, ADDR, buf, 2, false);
 }
 
-/*!
- *  @brief Function for reading the sensor's registers through I2C bus.
- *
- *  @param[in] i2c_addr : Sensor I2C address.
- *  @param[in] reg_addr : Register address.
- *  @param[out] reg_data    : Pointer to the data buffer to store the read data.
- *  @param[in] length   : No of bytes to read.
- *
- *  @return Status of execution
- *  @retval 0 -> Success
- *  @retval >0 -> Failure Info
- *
- */
-int8_t __i2c_reg_read(i2c_inst_t* i2c, uint8_t reg_addr, uint8_t *reg_data, uint16_t length)
+void bmp280_read_raw(int32_t *temp, int32_t *pressure)
 {
-    if(i2c_write_blocking(i2c, BMP280_I2C_ADDR_PRIM , &reg_addr, 1, true) == PICO_ERROR_GENERIC){
-		return -1;
-	}
-    
-    int bytes_read = i2c_read_blocking(i2c, BMP280_I2C_ADDR_PRIM, reg_data, length, false);
-    
-    if( bytes_read == PICO_ERROR_GENERIC){
-		return -1;
-	}
-	return bytes_read;
-    return 0;
+    // BMP280 data registers are auto-incrementing and we have 3 temperature and
+    // pressure registers each, so we start at 0xF7 and read 6 bytes to 0xFC
+    // note: normal mode does not require further ctrl_meas and config register writes
+
+    uint8_t buf[6];
+    uint8_t reg = REG_PRESSURE_MSB;
+    i2c_write_blocking(i2c_default, ADDR, &reg, 1, true); // true to keep master control of bus
+    i2c_read_blocking(i2c_default, ADDR, buf, 6, false);  // false - finished with bus
+
+    // store the 20 bit read in a 32 bit signed integer for conversion
+    *pressure = (buf[0] << 12) | (buf[1] << 4) | (buf[2] >> 4);
+    *temp = (buf[3] << 12) | (buf[4] << 4) | (buf[5] >> 4);
 }
 
-
-int8_t mbot_initialize_barometer(){
-    
-}
-
-int8_t mbot_config_barometer(){
-
-}
-
-int8_t mbot_read_barometer(){
-
-}
-
-
-/*!
- *  @brief Prints the execution status of the APIs.
- *
- *  @param[in] api_name : name of the API whose execution status has to be printed.
- *  @param[in] rslt     : error code returned by the API whose execution status has to be printed.
- *
- *  @return void.
- */
-void print_rslt(const char api_name[], int8_t rslt)
+void bmp280_reset()
 {
-    if (rslt != BMP280_OK)
+    // reset the device with the power-on-reset procedure
+    uint8_t buf[2] = {REG_RESET, 0xB6};
+    i2c_write_blocking(i2c_default, ADDR, buf, 2, false);
+}
+
+// intermediate function that calculates the fine resolution temperature
+// used for both pressure and temperature conversions
+int32_t bmp280_convert(int32_t temp, struct bmp280_calib_param *params)
+{
+    // use the 32-bit fixed point compensation implementation given in the
+    // datasheet
+
+    int32_t var1, var2;
+    var1 = ((((temp >> 3) - ((int32_t)params->dig_t1 << 1))) * ((int32_t)params->dig_t2)) >> 11;
+    var2 = (((((temp >> 4) - ((int32_t)params->dig_t1)) * ((temp >> 4) - ((int32_t)params->dig_t1))) >> 12) * ((int32_t)params->dig_t3)) >> 14;
+    return var1 + var2;
+}
+
+int32_t bmp280_convert_temp(int32_t temp, struct bmp280_calib_param *params)
+{
+    // uses the BMP280 calibration parameters to compensate the temperature value read from its registers
+    int32_t t_fine = bmp280_convert(temp, params);
+    return (t_fine * 5 + 128) >> 8;
+}
+
+int32_t bmp280_convert_pressure(int32_t pressure, int32_t temp, struct bmp280_calib_param *params)
+{
+    // uses the BMP280 calibration parameters to compensate the pressure value read from its registers
+
+    int32_t t_fine = bmp280_convert(temp, params);
+
+    int32_t var1, var2;
+    uint32_t converted = 0.0;
+    var1 = (((int32_t)t_fine) >> 1) - (int32_t)64000;
+    var2 = (((var1 >> 2) * (var1 >> 2)) >> 11) * ((int32_t)params->dig_p6);
+    var2 += ((var1 * ((int32_t)params->dig_p5)) << 1);
+    var2 = (var2 >> 2) + (((int32_t)params->dig_p4) << 16);
+    var1 = (((params->dig_p3 * (((var1 >> 2) * (var1 >> 2)) >> 13)) >> 3) + ((((int32_t)params->dig_p2) * var1) >> 1)) >> 18;
+    var1 = ((((32768 + var1)) * ((int32_t)params->dig_p1)) >> 15);
+    if (var1 == 0)
     {
-        printf("%s\t", api_name);
-        if (rslt == BMP280_E_NULL_PTR)
-        {
-            printf("Error [%d] : Null pointer error\r\n", rslt);
-        }
-        else if (rslt == BMP280_E_COMM_FAIL)
-        {
-            printf("Error [%d] : Bus communication failed\r\n", rslt);
-        }
-        else if (rslt == BMP280_E_IMPLAUS_TEMP)
-        {
-            printf("Error [%d] : Invalid Temperature\r\n", rslt);
-        }
-        else if (rslt == BMP280_E_DEV_NOT_FOUND)
-        {
-            printf("Error [%d] : Device not found\r\n", rslt);
-        }
-        else
-        {
-            /* For more error codes refer "*_defs.h" */
-            printf("Error [%d] : Unknown error code\r\n", rslt);
-        }
+        return 0; // avoid exception caused by division by zero
     }
+    converted = (((uint32_t)(((int32_t)1048576) - pressure) - (var2 >> 12))) * 3125;
+    if (converted < 0x80000000)
+    {
+        converted = (converted << 1) / ((uint32_t)var1);
+    }
+    else
+    {
+        converted = (converted / (uint32_t)var1) * 2;
+    }
+    var1 = (((int32_t)params->dig_p9) * ((int32_t)(((converted >> 3) * (converted >> 3)) >> 13))) >> 12;
+    var2 = (((int32_t)(converted >> 2)) * ((int32_t)params->dig_p8)) >> 13;
+    converted = (uint32_t)((int32_t)converted + ((var1 + var2 + params->dig_p7) >> 4));
+    return converted;
+}
+
+void bmp280_get_calib_params(struct bmp280_calib_param *params)
+{
+    // raw temp and pressure values need to be calibrated according to
+    // parameters generated during the manufacturing of the sensor
+    // there are 3 temperature params, and 9 pressure params, each with a LSB
+    // and MSB register, so we read from 24 registers
+
+    uint8_t buf[NUM_CALIB_PARAMS] = {0};
+    uint8_t reg = REG_DIG_T1_LSB;
+    i2c_write_blocking(i2c_default, ADDR, &reg, 1, true); // true to keep master control of bus
+    // read in one go as register addresses auto-increment
+    i2c_read_blocking(i2c_default, ADDR, buf, NUM_CALIB_PARAMS, false); // false, we're done reading
+
+    // store these in a struct for later use
+    params->dig_t1 = (uint16_t)(buf[1] << 8) | buf[0];
+    params->dig_t2 = (int16_t)(buf[3] << 8) | buf[2];
+    params->dig_t3 = (int16_t)(buf[5] << 8) | buf[4];
+
+    params->dig_p1 = (uint16_t)(buf[7] << 8) | buf[6];
+    params->dig_p2 = (int16_t)(buf[9] << 8) | buf[8];
+    params->dig_p3 = (int16_t)(buf[11] << 8) | buf[10];
+    params->dig_p4 = (int16_t)(buf[13] << 8) | buf[12];
+    params->dig_p5 = (int16_t)(buf[15] << 8) | buf[14];
+    params->dig_p6 = (int16_t)(buf[17] << 8) | buf[16];
+    params->dig_p7 = (int16_t)(buf[19] << 8) | buf[18];
+    params->dig_p8 = (int16_t)(buf[21] << 8) | buf[20];
+    params->dig_p9 = (int16_t)(buf[23] << 8) | buf[22];
+}
+
+#endif
+
+void mbot_initialize_barometer(){
+    bmp280_init();
+    bmp280_get_calib_params(&bmp280_params);
+}
+
+double mbot_read_barometer_pressure(){
+    int32_t raw_temperature;
+    int32_t raw_pressure;
+    bmp280_read_raw(&raw_temperature, &raw_pressure);
+    int32_t pressure = bmp280_convert_pressure(raw_pressure, raw_temperature, &bmp280_params);
+
+    double pres = pressure / 1000.f;    //kPa
+    return pres;
+}
+
+double mbot_read_barometer_temperature()
+{
+    int32_t raw_temperature;
+    int32_t raw_pressure;
+    bmp280_read_raw(&raw_temperature, &raw_pressure);
+    int32_t temperature = bmp280_convert_temp(raw_temperature, &bmp280_params);
+
+    double temp = temperature / 100.f;  //celsius
+    return temp;
 }
