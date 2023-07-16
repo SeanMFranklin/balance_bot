@@ -30,6 +30,10 @@
 // TODO: Decide which controller is used, open loop = 1, PID = 0
 #define OPEN_LOOP 1
 
+//Define drive type of this robot. See mbot_params.h.
+//TODO alternatively read from FRAM and decide at runtime
+#define MBOT_DRIVE_TYPE DIFFERENTIAL_DRIVE
+
 extern mbot_bhy_data_t mbot_imu_data;
 
 // Global pointer to the i2c bus
@@ -73,5 +77,8 @@ void mbot_motor_pwm_cmd_cb(serial_mbot_motor_pwm_t *msg);
 bool mbot_loop(repeating_timer_t *rt);
 void mbot_read_encoders(serial_mbot_encoders_t* encoders);
 void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor_vel_t *motor_vel);
+
+//helper functions
+float _calibrated_pwm_from_vel_cmd(float vel_cmd, int motor_idx);
 
 #endif
