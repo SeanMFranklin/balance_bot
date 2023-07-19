@@ -14,15 +14,6 @@ int main()
     return 0;
 #else
     
-    printf("Hello, BMP280! Reading temperaure and pressure values from sensor...\n");
-
-    // I2C is "open drain", pull ups to keep signal high when no data is being sent
-    i2c_init(i2c_default, 400 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-
     mbot_initialize_barometer();
     sleep_ms(250); // sleep so that data polling and register update don't collide
     while (1)

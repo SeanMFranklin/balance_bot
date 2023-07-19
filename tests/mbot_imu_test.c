@@ -24,7 +24,7 @@ int main() {
     mbot_imu_config.enable_quat = 1;
     mbot_imu_config.enable_mag = 1;
     mbot_imu_config.sample_rate = 200;
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config, true);
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
 
     while(1){
         printf("\033[2J\r");

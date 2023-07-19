@@ -1,5 +1,6 @@
 #include <mbot/imu/imu.h>
 #include <mbot/imu/firmware/BHI160B_fw.h>
+#include <mbot/utils/utils.h>
 #include <pico/stdlib.h>
 
 // Globals for IMU
@@ -91,7 +92,7 @@ void _imu_callback(uint gpio, uint32_t events) {
     //printf("Period: %d ms | Freq: %f Hz | Interrupt: %d us\n", period, freq, time_int);
 }
 
-int mbot_imu_init(mbot_bhy_data_t * data, mbot_bhy_config_t config, bool init_i2c){
+int mbot_imu_init(mbot_bhy_data_t * data, mbot_bhy_config_t config){
     data_ptr = data;
     data_ptr->accel_to_ms2 = ACCEL_2_MS2 * config.accel_range;
     data_ptr->gyro_to_rads = GYRO_2_RADS * config.gyro_range;
@@ -99,13 +100,7 @@ int mbot_imu_init(mbot_bhy_data_t * data, mbot_bhy_config_t config, bool init_i2
     data_ptr->quat_to_norm = QUAT_2_NORM;
     data_ptr->rpy_to_rad = RPY_2_RAD;
     i2c = i2c0;
-    if(init_i2c){
-        i2c_init(i2c, 400 * 1000);
-        gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-        gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-        gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-        gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
-    }
+    mbot_init_i2c();
     gpio_set_irq_enabled_with_callback(IMU_INT_PIN, GPIO_IRQ_EDGE_RISE, true, &_imu_callback);
     //for time profiling
     //time_now = to_us_since_boot(get_absolute_time());

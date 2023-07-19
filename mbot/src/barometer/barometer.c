@@ -12,6 +12,7 @@
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
 
+#include <mbot/utils/utils.h>
 #include <mbot/barometer/barometer.h>
 
 // device has default bus address of 0x76
@@ -209,6 +210,7 @@ void bmp280_get_calib_params(struct bmp280_calib_param *params)
 #endif
 
 void mbot_initialize_barometer(){
+    mbot_init_i2c();
     bmp280_init();
     bmp280_get_calib_params(&bmp280_params);
 }

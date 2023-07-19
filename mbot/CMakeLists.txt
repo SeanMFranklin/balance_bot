@@ -14,6 +14,8 @@ add_library(mbotlib STATIC
   src/barometer/barometer.c
   # DEFS
   src/defs/mbot_defs.c
+  # UTILS
+  src/utils/utils.c
 )
 
 target_link_libraries(mbotlib
