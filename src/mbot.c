@@ -186,8 +186,8 @@ int mbot_init_hardware(void){
     mbot_imu_config.sample_rate = 200;
     // Initialize the IMU using the Digital Motion Processor
     printf("Initializing IMU...\n");
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config, true);
-    mbot_init_fram(false);
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    mbot_init_fram();
     return MBOT_OK;
 }
 

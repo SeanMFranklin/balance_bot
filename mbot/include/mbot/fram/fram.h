@@ -29,7 +29,7 @@
  *
  * @return     0 on success or -1 on failure.
  */
-int mbot_init_fram(bool init_i2c);
+int mbot_init_fram();
 
 /**
  * @brief

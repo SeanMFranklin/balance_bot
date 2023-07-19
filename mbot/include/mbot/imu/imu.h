@@ -102,7 +102,7 @@ typedef enum {
     BHI160_GYRO_RANGE_2000_DPS = 2000
 } BHI160_GyroRange;
 
-int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config, bool init_i2c);
+int mbot_imu_init(mbot_bhy_data_t* data, mbot_bhy_config_t config);
 void mbot_imu_print(mbot_bhy_data_t data);
 mbot_bhy_config_t mbot_imu_default_config(void);
 

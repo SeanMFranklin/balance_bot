@@ -95,8 +95,12 @@ int main() {
     mbot_motor_init(1);
     mbot_motor_init(2);
     mbot_encoder_init();
-    mbot_init_fram(true);
+    mbot_init_fram();
     printf("\nWaiting for 3 seconds...\n");
+
+    //Since the IMU starts giving us data after ~2 seconds empirically, might as well initialize it now.
+    mbot_imu_config = mbot_imu_default_config();
+    int imu_init_status = mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     sleep_ms(3000);
 
     
@@ -126,15 +130,13 @@ int main() {
     mbot_motor_set_duty(0, 0.0);
     mbot_motor_set_duty(1, 0.0);
     mbot_motor_set_duty(2, 0.0);
-
+    sleep_ms(500);
 
     /*************************************************
      * find motor polarity relative to IMU, this is the
      * control signal to turn the robot CCW
      *************************************************/
     printf("\nTesting Motor Polarity...\n");
-    mbot_imu_config = mbot_imu_default_config();
-    int imu_init_status = mbot_imu_init(&mbot_imu_data, mbot_imu_config, false);
     if(imu_init_status == 0){
         // IMU available
         //  find motor polarity
