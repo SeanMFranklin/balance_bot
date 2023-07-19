@@ -20,16 +20,16 @@ int main() {
     mbot_imu_config = mbot_imu_default_config();
     mbot_imu_config.accel_range = BHI160_ACCEL_RANGE_4G;
     mbot_imu_config.gyro_range = BHI160_GYRO_RANGE_250_DPS;
-    mbot_imu_config.enable_rpy = 0;
-    mbot_imu_config.enable_quat = 0;
+    mbot_imu_config.enable_rpy = 1;
+    mbot_imu_config.enable_quat = 1;
     mbot_imu_config.enable_mag = 1;
-    mbot_imu_config.sample_rate = 100;
-    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    mbot_imu_config.sample_rate = 200;
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config, true);
 
     while(1){
         printf("\033[2J\r");
         mbot_imu_print(mbot_imu_data);
-        sleep_ms(100);
+        sleep_ms(1000);
     }
 
 }

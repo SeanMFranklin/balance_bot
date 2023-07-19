@@ -96,14 +96,18 @@ static i2c_inst_t* i2c;
 /**
 * functions for external use
 **/
-int mbot_init_fram(void)
+int mbot_init_fram(bool init_i2c)
 {
     i2c = I2C_FRAM;
-    i2c_init(i2c, 400 * 1000);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+    if(init_i2c){
+        //avoid resetting i2c if other devices already initialized it (e.g. IMU)
+        i2c_init(i2c, 400 * 1000);
+        gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+        gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+        gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+        gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+    }
+
     // This function is broken, because __get_device_id is broken
     // We can still read and write to mem, just not check on startup that its the right chip
     uint16_t manuf_id, prod_id;
