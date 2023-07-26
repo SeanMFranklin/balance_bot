@@ -1,6 +1,7 @@
 #include <mbot/utils/utils.h>
 #include <pico/stdlib.h>
 #include <hardware/i2c.h>
+#include <mbot/defs/mbot_params.h>
 
 //Always operates on the I2C0 line.
 
@@ -26,4 +27,52 @@ int _mbot_init_i2c(unsigned int pico_sda_pin, unsigned int pico_scl_pin)
 int _check_i2c0_enabled(){
     // 0x9C: I2C_ENABLE_STATUS has bit 0 = 1 when initialized and 0 when not (default 0)
     return *(volatile uint32_t*)(I2C0_BASE + 0x9C) & 1;
+}
+
+//Validates mbot calibration in FRAM.
+int validate_FRAM_data(mbot_params_t* params) const {
+    if(params->wheel_radius == 0 || params->wheel_base_radius == 0 || params->gear_ratio == 0 || params->encoder_resolution == 0){
+        printf("Parameters are invalid - Please run the calibration script for the robot.\n");
+        return -1;
+    }
+    for(char idx = 0; idx < 3; ++idx){
+        if(params->motor_polarity[idx] != 1 && params->motor_polarity[idx] != -1){
+            printf("Parameters invalid for motor polarity %d\n", idx);
+            return -1;
+        }
+        if(params->encoder_polarity[idx] != 1 && params->encoder_polarity[idx] != -1){
+            printf("Parameters invalid for encoder polarity %d\n", idx);
+            return -1;
+        }
+    }
+    if(params->robot_type < 1 || params->robot_type > 3){
+        printf("Parameters invalid for robot_type: %d\n", params->robot_type);
+        return -1;
+    }
+    if(params->mot_left > 3 || params->mot_left < 0){
+        printf("Parameters invalid for mot_left: %d\n", params->mot_left);
+        return -1;
+    }
+    if(params->mot_right > 3 || params->mot_right < 0){
+        printf("Parameters invalid for mot_right: %d\n", params->mot_right);
+        return -1;
+    }
+    if(params->robot_type == OMNI_120_DRIVE){
+        if(params->mot_back > 3 || params->mot_back < 0){
+            printf("Parameters invalid for mot_back: %d\n", params->mot_back);
+            return -1;
+        }
+    }
+
+    for(char idx = 0; idx < 3; ++idx){
+        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == 1){
+            continue; //Don't look for slope/intercept on back wheel that doesn't exist
+        }
+        if(params->slope_pos[idx] <= 0 || params->itrcpt_pos[idx] < 0 || params->slope_neg[idx] <= 0 || params->itrcpt_neg[idx] > 0){
+            printf("Parameters invalid for calibrated slope/intercept\n");
+            return -1;
+        }
+    }
+
+    return 0;
 }

@@ -5,6 +5,7 @@
 #include <hardware/gpio.h>
 #include "mbot.h"
 #include "odometry.h"
+#include <mbot/utils/utils.h>
 #include "print_tables.h"
 #include <mbot/defs/mbot_params.h>
 
@@ -367,7 +368,20 @@ int main()
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
+    printf("Here\n");
     mbot_read_fram(0, sizeof(params), &params);
+    
+    //Check also that define drive type is same as FRAM drive type
+    if(validate_FRAM_data(&params) < 0){
+        printf("Failed to validate FRAM Data!\n");
+        return -1;
+    }
+
+    if(params.robot_type != MBOT_DRIVE_TYPE){
+        printf("#define type is not equal to calibration type!\n");
+        return -1;
+    }
+
     sleep_ms(3000);
     print_mbot_params(&params);
     printf("Starting MBot Loop...\n");
