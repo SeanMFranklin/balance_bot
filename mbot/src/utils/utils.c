@@ -30,47 +30,47 @@ int _check_i2c0_enabled(){
 }
 
 //Validates mbot calibration in FRAM.
-int validate_FRAM_data(mbot_params_t* params) const {
+int validate_FRAM_data(mbot_params_t* params){
     if(params->wheel_radius == 0 || params->wheel_base_radius == 0 || params->gear_ratio == 0 || params->encoder_resolution == 0){
-        printf("Parameters are invalid - Please run the calibration script for the robot.\n");
+        //Invalid general params
         return -1;
     }
-    for(char idx = 0; idx < 3; ++idx){
+    for(int idx = 0; idx < 3; ++idx){
         if(params->motor_polarity[idx] != 1 && params->motor_polarity[idx] != -1){
-            printf("Parameters invalid for motor polarity %d\n", idx);
-            return -1;
+            //Invalid motor polarity
+            return -2;
         }
         if(params->encoder_polarity[idx] != 1 && params->encoder_polarity[idx] != -1){
-            printf("Parameters invalid for encoder polarity %d\n", idx);
-            return -1;
+            //Invalid encoder polarity
+            return -3;
         }
     }
     if(params->robot_type < 1 || params->robot_type > 3){
-        printf("Parameters invalid for robot_type: %d\n", params->robot_type);
-        return -1;
+        //Invalid robot type
+        return -4;
     }
     if(params->mot_left > 3 || params->mot_left < 0){
-        printf("Parameters invalid for mot_left: %d\n", params->mot_left);
-        return -1;
+        //Invalid left motor pin
+        return -5;
     }
     if(params->mot_right > 3 || params->mot_right < 0){
-        printf("Parameters invalid for mot_right: %d\n", params->mot_right);
-        return -1;
+        //Invalid right motor pin
+        return -6;
     }
     if(params->robot_type == OMNI_120_DRIVE){
         if(params->mot_back > 3 || params->mot_back < 0){
-            printf("Parameters invalid for mot_back: %d\n", params->mot_back);
-            return -1;
+            //Invalid back motor pin
+            return -7;
         }
     }
 
-    for(char idx = 0; idx < 3; ++idx){
+    for(int idx = 0; idx < 3; ++idx){
         if(params->robot_type == DIFFERENTIAL_DRIVE && idx == 1){
             continue; //Don't look for slope/intercept on back wheel that doesn't exist
         }
         if(params->slope_pos[idx] <= 0 || params->itrcpt_pos[idx] < 0 || params->slope_neg[idx] <= 0 || params->itrcpt_neg[idx] > 0){
-            printf("Parameters invalid for calibrated slope/intercept\n");
-            return -1;
+            //Invalid slope/intercept
+            return -8;
         }
     }
 

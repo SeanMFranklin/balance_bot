@@ -368,12 +368,13 @@ int main()
     mbot_init_pico();
     mbot_init_hardware();
     mbot_init_comms();
-    printf("Here\n");
     mbot_read_fram(0, sizeof(params), &params);
     
     //Check also that define drive type is same as FRAM drive type
-    if(validate_FRAM_data(&params) < 0){
-        printf("Failed to validate FRAM Data!\n");
+    int validate_status = validate_FRAM_data(&params);
+    if (validate_status < 0)
+    {
+        printf("Failed to validate FRAM Data! Error code: %d\n", validate_status);
         return -1;
     }
 
