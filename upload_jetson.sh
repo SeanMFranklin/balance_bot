@@ -15,7 +15,7 @@ UF2_FILE=$1
 BTLD_PIN=16
 RUN_PIN=18
 
-#setup GPIO pins
+# setup GPIO pins
 echo $BTLD_PIN > /sys/class/gpio/export
 echo $RUN_PIN > /sys/class/gpio/export
 sleep 0.1
@@ -26,7 +26,7 @@ echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
 echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
 sleep 0.1
 
-#Toggle to bootloader
+# Toggle to bootloader
 echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
 sleep 0.1
 echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
@@ -34,12 +34,14 @@ sleep 0.5
 echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
 sleep 1
 
+# Upload code
 sudo picotool load $UF2_FILE
 sleep 0.5
 echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
 sleep 0.5
 sudo picotool reboot
 
+# Make pins High-Z and unexport
 echo in > /sys/class/gpio/gpio$BTLD_PIN/direction
 echo in > /sys/class/gpio/gpio$RUN_PIN/direction
 echo $BTLD_PIN > /sys/class/gpio/unexport
