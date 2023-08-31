@@ -36,6 +36,25 @@ pico_enable_stdio_usb(mbot_calibrate_accel 1)
 pico_enable_stdio_uart(mbot_calibrate_accel 0)
 pico_add_extra_outputs(mbot_calibrate_accel)
 
+#mbot_fake_calibration
+add_executable(mbot_fake_calibration
+  mbot_fake_calibration.c
+)
+target_link_libraries(mbot_fake_calibration
+  pico_stdlib
+  pico_multicore
+  hardware_pwm
+  hardware_sync
+  hardware_i2c
+  hardware_flash
+  rclib
+  comms
+)
+pico_enable_stdio_usb(mbot_fake_calibration 1)
+pico_enable_stdio_uart(mbot_fake_calibration 0)
+pico_add_extra_outputs(mbot_fake_calibration)
+
+
 #mbot_calibrate_gyro
 add_executable(mbot_calibrate_gyro
   mbot_calibrate_gyro.c
