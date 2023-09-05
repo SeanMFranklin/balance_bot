@@ -31,7 +31,6 @@
 #define OPEN_LOOP 1
 
 //Define drive type of this robot. See mbot_params.h.
-//TODO alternatively read from FRAM and decide at runtime
 #define MBOT_DRIVE_TYPE OMNI_120_DRIVE
 
 extern mbot_bhy_data_t mbot_imu_data;
