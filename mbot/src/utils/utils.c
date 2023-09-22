@@ -36,6 +36,9 @@ int validate_FRAM_data(mbot_params_t* params){
         return -1;
     }
     for(int idx = 0; idx < 3; ++idx){
+        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == 1){
+            continue; //Don't look for slope/intercept on back wheel that doesn't exist
+        }
         if(params->motor_polarity[idx] != 1 && params->motor_polarity[idx] != -1){
             //Invalid motor polarity
             return -2;
