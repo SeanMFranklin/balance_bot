@@ -90,7 +90,6 @@ int main() {
     params.wheel_base_radius = DIFF_BASE_RADIUS;
     params.wheel_radius = DIFF_WHEEL_RADIUS;
     stdio_init_all();
-    sleep_ms(5000); // quick sleep so we can catch the bootup process in terminal
     printf("\n\n\nInitializing...\n");
     bi_decl(bi_program_description("This will calibrate an MBot and print a diagnostic report"));
     mbot_motor_init(0);
@@ -114,7 +113,7 @@ int main() {
     printf("\nENC0 POL: %d , ENC1 POL: %d\n", params.encoder_polarity[0], params.encoder_polarity[2]);
     
     
-    //printf("\nTesting Motor Polarity...\n");
+    printf("\nTesting Motor Polarity...\n");
     mbot_imu_config = mbot_imu_default_config();
     mbot_imu_init(&mbot_imu_data, mbot_imu_config);
     float accel_x0 = 0.0;
@@ -126,7 +125,7 @@ int main() {
         sleep_ms(20);
     }
     printf("\nTesting Motor Polarity...\n");
-    printf("\nACCEL | x0: %f y0: %f\n\n", accel_x0, accel_y0);
+    printf("\nACCEL baseline | x0: %f y0: %f\n\n", accel_x0, accel_y0);
 
 
     // find motor polarity
@@ -134,12 +133,12 @@ int main() {
     float accel_x[4] = {0, 0, 0, 0};
     float accel_y[4] = {0, 0, 0, 0};
 
-    // Definitions for motor duties for each case
+    float spd = 0.4; //Motor duty used for calibration
     float motor_duties[4][2] = {
-        {0.5, 0.5},
-        {-0.5, 0.5},
-        {0.5, -0.5},
-        {-0.5, -0.5}
+        {spd, spd},
+        {-spd, spd},
+        {spd, -spd},
+        {-spd, -spd}
     };
 
     for (int i = 0; i < 4; i++) {
@@ -163,9 +162,9 @@ int main() {
     printf("2 smallest: (%d, %d)\n", idx1, idx2);
     rot_idx = find_index_of_max_positive(gyro_z, 4); //Find largest positive rotation (+wz)
 
-    if(accel_x[idx1] > 0.0){fwd_idx = idx1;}
-    else if(accel_x[idx2] > 0.0){fwd_idx = idx2;} //Find no rotation max +x acceleration (+vx)
-    else{printf("ERROR, No Positive Acceleration\n");}
+    if(accel_x[idx1] < 0.0){fwd_idx = idx1;}
+    else if(accel_x[idx2] < 0.0){fwd_idx = idx2;} //Find no rotation max -x acceleration (+vx)
+    else{printf("ERROR, No Negative Acceleration\n");}
     printf("rotidx, fwdidx = %d, %d\n", rot_idx, fwd_idx);
     switch(fwd_idx) {
     case 0:
@@ -297,7 +296,7 @@ int main() {
     least_squares_fit(duty_left, wheel_speed_left, n, &m_ln, &b_ln);
     
     //slow down
-    
+
     mbot_motor_set_duty(mot_right, params.motor_polarity[mot_right] * -0.8);
     mbot_motor_set_duty(mot_left, params.motor_polarity[mot_left] * -0.8);
     sleep_ms(300);
