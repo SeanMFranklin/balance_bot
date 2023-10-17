@@ -36,7 +36,7 @@ int validate_FRAM_data(mbot_params_t* params){
         return -1;
     }
     for(int idx = 0; idx < 3; ++idx){
-        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == 1){
+        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == UNUSED_DIFF_MOTOR_SLOT){
             continue; //Don't look for slope/intercept on back wheel that doesn't exist
         }
         if(params->motor_polarity[idx] != 1 && params->motor_polarity[idx] != -1){
@@ -68,7 +68,7 @@ int validate_FRAM_data(mbot_params_t* params){
     }
 
     for(int idx = 0; idx < 3; ++idx){
-        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == 1){
+        if(params->robot_type == DIFFERENTIAL_DRIVE && idx == UNUSED_DIFF_MOTOR_SLOT){
             continue; //Don't look for slope/intercept on back wheel that doesn't exist
         }
         if(params->slope_pos[idx] <= 0 || params->itrcpt_pos[idx] < 0 || params->slope_neg[idx] <= 0 || params->itrcpt_neg[idx] > 0){

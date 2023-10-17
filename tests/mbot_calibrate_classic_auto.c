@@ -7,13 +7,12 @@
 #include <mbot/motor/motor.h>
 #include <mbot/encoder/encoder.h>
 #include <mbot/fram/fram.h>
-#include <mbot/defs/mbot_params.h>
 
 mbot_bhy_data_t mbot_imu_data;
 mbot_bhy_config_t mbot_imu_config;
 
-#define MOT_LEFT_POL 1
-#define MOT_RIGHT_POL 1
+#define MOTOR_LEFT 0
+#define MOTOR_RIGHT 1
 
 void find_two_smallest(float* arr, int size, int* idx1, int* idx2) {
     *idx1 = 0;
@@ -74,14 +73,14 @@ void print_mbot_params_dd(const mbot_params_t* params) {
     printf("Motor Left: %d\n", params->mot_left);
     printf("Motor Right: %d\n", params->mot_right);
 
-    printf("Motor Polarity: %d %d\n", params->motor_polarity[DIFF_MOTOR_LEFT_SLOT], params->motor_polarity[DIFF_MOTOR_RIGHT_SLOT]);
-    printf("Encoder Polarity: %d %d\n", params->encoder_polarity[DIFF_MOTOR_LEFT_SLOT], params->encoder_polarity[DIFF_MOTOR_RIGHT_SLOT]);
+    printf("Motor Polarity: %d %d\n", params->motor_polarity[MOTOR_LEFT], params->motor_polarity[MOTOR_RIGHT]);
+    printf("Encoder Polarity: %d %d\n", params->encoder_polarity[MOTOR_LEFT], params->encoder_polarity[MOTOR_RIGHT]);
 
-    printf("Positive Slope: %f %f\n", params->slope_pos[DIFF_MOTOR_LEFT_SLOT], params->slope_pos[DIFF_MOTOR_RIGHT_SLOT]);
-    printf("Positive Intercept: %f %f\n", params->itrcpt_pos[DIFF_MOTOR_LEFT_SLOT], params->itrcpt_pos[DIFF_MOTOR_RIGHT_SLOT]);
+    printf("Positive Slope: %f %f\n", params->slope_pos[MOTOR_LEFT], params->slope_pos[MOTOR_RIGHT]);
+    printf("Positive Intercept: %f %f\n", params->itrcpt_pos[MOTOR_LEFT], params->itrcpt_pos[MOTOR_RIGHT]);
 
-    printf("Negative Slope: %f %f\n", params->slope_neg[DIFF_MOTOR_LEFT_SLOT], params->slope_neg[DIFF_MOTOR_RIGHT_SLOT]);
-    printf("Negative Intercept: %f %f\n", params->itrcpt_neg[DIFF_MOTOR_LEFT_SLOT], params->itrcpt_neg[DIFF_MOTOR_RIGHT_SLOT]);
+    printf("Negative Slope: %f %f\n", params->slope_neg[MOTOR_LEFT], params->slope_neg[MOTOR_RIGHT]);
+    printf("Negative Intercept: %f %f\n", params->itrcpt_neg[MOTOR_LEFT], params->itrcpt_neg[MOTOR_RIGHT]);
 }
 
 int main() {
@@ -94,115 +93,119 @@ int main() {
     stdio_init_all();
     printf("\n\n\nInitializing...\n");
     bi_decl(bi_program_description("This will calibrate an MBot and print a diagnostic report"));
-    mbot_motor_init(DIFF_MOTOR_LEFT_SLOT);
-    mbot_motor_init(DIFF_MOTOR_RIGHT_SLOT);
+    mbot_motor_init(MOTOR_LEFT);
+    mbot_motor_init(MOTOR_RIGHT);
     mbot_encoder_init();
     mbot_init_fram();
     printf("\nWaiting for 5 seconds...\n");
     sleep_ms(5000);
     // find encoder polarity
     printf("\nTesting Encoder Polarity...\n");
-    mbot_motor_set_duty(DIFF_MOTOR_LEFT_SLOT, 0.2);
-    mbot_motor_set_duty(DIFF_MOTOR_RIGHT_SLOT, 0.2);
+    mbot_motor_set_duty(MOTOR_LEFT, 0.2);
+    mbot_motor_set_duty(MOTOR_RIGHT, 0.2);
     for(int i=0; i<5; i++){
-        printf("E0: %d , E1: %d\n", mbot_encoder_read_delta(DIFF_MOTOR_LEFT_SLOT), mbot_encoder_read_delta(DIFF_MOTOR_RIGHT_SLOT));
+        printf("E0: %d , E1: %d\n", mbot_encoder_read_delta(MOTOR_LEFT), mbot_encoder_read_delta(MOTOR_RIGHT));
         sleep_ms(100);
     }
-    mbot_motor_set_duty(DIFF_MOTOR_LEFT_SLOT, 0.0);
-    mbot_motor_set_duty(DIFF_MOTOR_RIGHT_SLOT, 0.0);
-    params.encoder_polarity[DIFF_MOTOR_LEFT_SLOT] = (mbot_encoder_read_count(DIFF_MOTOR_LEFT_SLOT)>0) ? 1 : -1;
-    params.encoder_polarity[DIFF_MOTOR_RIGHT_SLOT] = (mbot_encoder_read_count(DIFF_MOTOR_RIGHT_SLOT)>0) ? 1 : -1;
-    printf("\nENC0 POL: %d , ENC1 POL: %d\n", params.encoder_polarity[DIFF_MOTOR_LEFT_SLOT], params.encoder_polarity[DIFF_MOTOR_RIGHT_SLOT]);
+    mbot_motor_set_duty(MOTOR_LEFT, 0.0);
+    mbot_motor_set_duty(MOTOR_RIGHT, 0.0);
+    params.encoder_polarity[MOTOR_LEFT] = (mbot_encoder_read_count(MOTOR_LEFT)>0) ? 1 : -1;
+    params.encoder_polarity[MOTOR_RIGHT] = (mbot_encoder_read_count(MOTOR_RIGHT)>0) ? 1 : -1;
+    printf("\nENC0 POL: %d , ENC1 POL: %d\n", params.encoder_polarity[MOTOR_LEFT], params.encoder_polarity[MOTOR_RIGHT]);
     
     
-    // printf("\nTesting Motor Polarity...\n");
-    // mbot_imu_config = mbot_imu_default_config();
-    // mbot_imu_init(&mbot_imu_data, mbot_imu_config);
-    // float accel_x0 = 0.0;
-    // float accel_y0 = 0.0;
-    // sleep_ms(1000);
-    // for(int i=0; i<100; i++){
-    //     accel_x0 += mbot_imu_data.accel[0]/100.0;
-    //     accel_y0 += mbot_imu_data.accel[1]/100.0;
-    //     sleep_ms(20);
-    // }
-    // printf("\nTesting Motor Polarity...\n");
-    // printf("\nACCEL baseline | x0: %f y0: %f\n\n", accel_x0, accel_y0);
+    printf("\nTesting Motor Polarity...\n");
+    mbot_imu_config = mbot_imu_default_config();
+    mbot_imu_init(&mbot_imu_data, mbot_imu_config);
+    float accel_x0 = 0.0;
+    float accel_y0 = 0.0;
+    sleep_ms(1000);
+    for(int i=0; i<100; i++){
+        accel_x0 += mbot_imu_data.accel[0]/100.0;
+        accel_y0 += mbot_imu_data.accel[1]/100.0;
+        sleep_ms(20);
+    }
+    printf("\nTesting Motor Polarity...\n");
+    printf("\nACCEL baseline | x0: %f y0: %f\n\n", accel_x0, accel_y0);
 
 
-    // // find motor polarity
-    // float gyro_z[4] = {0, 0, 0, 0};
-    // float accel_x[4] = {0, 0, 0, 0};
-    // float accel_y[4] = {0, 0, 0, 0};
+    // find motor polarity
+    float gyro_z[4] = {0, 0, 0, 0};
+    float accel_x[4] = {0, 0, 0, 0};
+    float accel_y[4] = {0, 0, 0, 0};
 
     float spd = 0.4; //Motor duty used for calibration
     float motor_duties[4][2] = {
-         {spd, spd},
+        {spd, spd},
         {-spd, spd},
         {spd, -spd},
         {-spd, -spd}
     };
 
-    // for (int i = 0; i < 4; i++) {
-    //     mbot_motor_set_duty(DIFF_MOTOR_LEFT_SLOT, motor_duties[i][0]);
-    //     mbot_motor_set_duty(DIFF_MOTOR_RIGHT_SLOT, motor_duties[i][1]);
+    for (int i = 0; i < 4; i++) {
+        mbot_motor_set_duty(MOTOR_LEFT, motor_duties[i][0]);
+        mbot_motor_set_duty(MOTOR_RIGHT, motor_duties[i][1]);
 
-    //     for (int j = 0; j < 25; j++) {
-    //         gyro_z[i] += mbot_imu_data.gyro[2];
-    //         accel_x[i] += mbot_imu_data.accel[0] - accel_x0;
-    //         accel_y[i] += mbot_imu_data.accel[1] - accel_y0;
-    //         sleep_ms(20);
-    //     }
+        for (int j = 0; j < 25; j++) {
+            gyro_z[i] += mbot_imu_data.gyro[2];
+            accel_x[i] += mbot_imu_data.accel[0] - accel_x0;
+            accel_y[i] += mbot_imu_data.accel[1] - accel_y0;
+            sleep_ms(20);
+        }
 
-    //     mbot_motor_set_duty(DIFF_MOTOR_LEFT_SLOT, 0.0);
-    //     mbot_motor_set_duty(DIFF_MOTOR_RIGHT_SLOT, 0.0);
-    //     printf("Gyro: %f , Accel X: %f , Accel Y: %f\n", gyro_z[i], accel_x[i], accel_y[i]);
-    //     sleep_ms(500);
-    // }
-    // int idx1, idx2, fwd_idx, rot_idx;
-    // find_two_smallest(gyro_z, 4, &idx1, &idx2); //Find the two segments without rotation
-    // printf("2 smallest: (%d, %d)\n", idx1, idx2);
-    // rot_idx = find_index_of_max_positive(gyro_z, 4); //Find largest positive rotation (+wz)
+        mbot_motor_set_duty(MOTOR_LEFT, 0.0);
+        mbot_motor_set_duty(MOTOR_RIGHT, 0.0);
+        printf("Gyro: %f , Accel X: %f , Accel Y: %f\n", gyro_z[i], accel_x[i], accel_y[i]);
+        sleep_ms(500);
+    }
+    int idx1, idx2, fwd_idx, rot_idx;
+    find_two_smallest(gyro_z, 4, &idx1, &idx2); //Find the two segments without rotation
+    printf("2 smallest: (%d, %d)\n", idx1, idx2);
+    rot_idx = find_index_of_max_positive(gyro_z, 4); //Find largest positive rotation (+wz)
 
-    // if(accel_x[idx1] < 0.0){fwd_idx = idx1;}
-    // else if(accel_x[idx2] < 0.0){fwd_idx = idx2;} //Find no rotation max -x acceleration (+vx)
-    // else{printf("ERROR, No Negative Acceleration\n");}
-    // printf("rotidx, fwdidx = %d, %d\n", rot_idx, fwd_idx);
-    // switch(fwd_idx) {
-    // case 0:
-    //     params.motor_polarity[DIFF_MOTOR_LEFT_SLOT] = 1;
-    //     params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT] = -1;
-    //     break;
-    // case 1:
-    //     params.motor_polarity[DIFF_MOTOR_LEFT_SLOT] = -1;
-    //     params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT] = -1;
-    //     break;
-    // case 2:
-    //     params.motor_polarity[DIFF_MOTOR_LEFT_SLOT] = 1;
-    //     params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT] = 1;
-    //     break;
-    // case 3:
-    //     params.motor_polarity[DIFF_MOTOR_LEFT_SLOT] = -1;
-    //     params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT] = 1;
-    //     break;
-    // default:
-    //     printf("ERROR: Invalid index\n");
-    // }
+    if(accel_x[idx1] < 0.0){fwd_idx = idx1;}
+    else if(accel_x[idx2] < 0.0){fwd_idx = idx2;} //Find no rotation max -x acceleration (+vx)
+    else{printf("ERROR, No Negative Acceleration\n");}
+    printf("rotidx, fwdidx = %d, %d\n", rot_idx, fwd_idx);
+    switch(fwd_idx) {
+    case 0:
+        params.motor_polarity[MOTOR_LEFT] = 1;
+        params.motor_polarity[MOTOR_RIGHT] = -1;
+        break;
+    case 1:
+        params.motor_polarity[MOTOR_LEFT] = -1;
+        params.motor_polarity[MOTOR_RIGHT] = -1;
+        break;
+    case 2:
+        params.motor_polarity[MOTOR_LEFT] = 1;
+        params.motor_polarity[MOTOR_RIGHT] = 1;
+        break;
+    case 3:
+        params.motor_polarity[MOTOR_LEFT] = -1;
+        params.motor_polarity[MOTOR_RIGHT] = 1;
+        break;
+    default:
+        printf("ERROR: Invalid index\n");
+    }
     //Adjust Polarity for positive readings
-
-    params.motor_polarity[DIFF_MOTOR_LEFT_SLOT] = MOT_LEFT_POL;
-    params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT] = MOT_RIGHT_POL;
-    params.encoder_polarity[DIFF_MOTOR_LEFT_SLOT] *= params.motor_polarity[DIFF_MOTOR_LEFT_SLOT];
-    params.encoder_polarity[DIFF_MOTOR_RIGHT_SLOT] *= params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT];
+    params.encoder_polarity[MOTOR_LEFT] *= params.motor_polarity[MOTOR_LEFT];
+    params.encoder_polarity[MOTOR_RIGHT] *= params.motor_polarity[MOTOR_RIGHT];
 
     for(int i=0; i<4; i++){
-        motor_duties[i][0] *= params.motor_polarity[DIFF_MOTOR_LEFT_SLOT];
-        motor_duties[i][1] *= params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT];
+        motor_duties[i][0] *= params.motor_polarity[MOTOR_LEFT];
+        motor_duties[i][1] *= params.motor_polarity[MOTOR_RIGHT];
     }
-
-    params.mot_left = DIFF_MOTOR_LEFT_SLOT;
-    params.mot_right = DIFF_MOTOR_RIGHT_SLOT;
-    printf("Motor Polarity: (%d, %d)  Left ID: %d, Right ID: %d\n", params.motor_polarity[DIFF_MOTOR_LEFT_SLOT], params.motor_polarity[DIFF_MOTOR_RIGHT_SLOT], params.mot_left, params.mot_right);
+    // if(motor_duties[rot_idx][0] > 0.0){
+    //     params.mot_right = 0;
+    //     params.mot_left = 2;
+    // }
+    // else if(motor_duties[rot_idx][1] > 0.0){
+    //     params.mot_right = 2;
+    //     params.mot_left = 0;
+    // }
+    params.mot_left = MOTOR_LEFT;
+    params.mot_right = MOTOR_RIGHT;
+    printf("Motor Polarity: (%d, %d)  Left ID: %d, Right ID: %d\n", params.motor_polarity[MOTOR_LEFT], params.motor_polarity[MOTOR_RIGHT], params.mot_left, params.mot_right);
 
     int enc_right;
     int enc_left;

@@ -16,7 +16,7 @@
 
 // Hardware Parameters
 #define GEAR_RATIO              78.0
-#define ENCODER_RES             20.0 // 40.0 for ROB103 encoders
+#define ENCODER_RES             40.0 // 40.0 for ROB103 encoders
 
 #define DIFFERENTIAL_DRIVE 1
 #define OMNI_120_DRIVE 2 // 3 omni wheels spaced 120deg
@@ -26,6 +26,9 @@
 #define DIFF_WHEEL_DIAMETER          0.0837
 #define DIFF_WHEEL_RADIUS            0.04183
 #define DIFF_BASE_RADIUS             0.07786
+#define DIFF_MOTOR_LEFT_SLOT         0    // Left motor using M0 slot
+#define DIFF_MOTOR_RIGHT_SLOT        1    // Right motor using M1 slot
+#define UNUSED_DIFF_MOTOR_SLOT       2    // defined for mbot classic, 2 means M2 slot
 
 // MBot Omni Parameters
 // #define OMNI_OLD_BASE_RADIUS        0.094     // radius of wheel centers (old bot)

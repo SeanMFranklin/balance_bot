@@ -170,11 +170,11 @@ int mbot_init_hardware(void){
     sleep_ms(1000);
     // Initialize Motors
     printf("initializinging motors...\n");
-    mbot_motor_init(0);
+    mbot_motor_init(DIFF_MOTOR_LEFT_SLOT);
     if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
         mbot_motor_init(1);
     }
-    mbot_motor_init(2);
+    mbot_motor_init(DIFF_MOTOR_RIGHT_SLOT);
     printf("initializinging encoders...\n");
     mbot_encoder_init();
 
@@ -350,11 +350,11 @@ bool mbot_loop(repeating_timer_t *rt)
     //check comms and kill motors if its been too long
     uint64_t timeout = to_us_since_boot(get_absolute_time()) - global_pico_time;
     if(timeout > MBOT_TIMEOUT_US){
-        mbot_motor_set_duty(0, 0.0);
+        mbot_motor_set_duty(DIFF_MOTOR_LEFT_SLOT, 0.0);
         if(MBOT_DRIVE_TYPE == OMNI_120_DRIVE){
             mbot_motor_set_duty(1, 0.0);
         }
-        mbot_motor_set_duty(2, 0.0);
+        mbot_motor_set_duty(DIFF_MOTOR_RIGHT_SLOT, 0.0);
         global_comms_status = COMMS_ERROR;
     }
 
