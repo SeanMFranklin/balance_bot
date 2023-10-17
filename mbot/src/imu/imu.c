@@ -252,9 +252,8 @@ static void _sensors_callback_orientation(bhy_data_generic_t * sensor_data, bhy_
  */
 static void _sensors_callback_accel(bhy_data_generic_t * sensor_data, bhy_virtual_sensor_t sensor_id)
 {
-
-    data_ptr->raw_accel[0] = -sensor_data->data_vector.y;
-    data_ptr->raw_accel[1] = sensor_data->data_vector.x;
+    data_ptr->raw_accel[0] = sensor_data->data_vector.x;
+    data_ptr->raw_accel[1] = sensor_data->data_vector.y;
     data_ptr->raw_accel[2] = sensor_data->data_vector.z;
     data_ptr->accel[0] = (float)data_ptr->raw_accel[0] * data_ptr->accel_to_ms2;
     data_ptr->accel[1] = (float)data_ptr->raw_accel[1] * data_ptr->accel_to_ms2;
