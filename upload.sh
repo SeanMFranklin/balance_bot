@@ -28,12 +28,24 @@ else
   exit 1
 fi
 
-# setup GPIO pins
-echo $BTLD_PIN > /sys/class/gpio/export
-echo $RUN_PIN > /sys/class/gpio/export
-sleep 0.1
-echo out > /sys/class/gpio/gpio$BTLD_PIN/direction
-echo out > /sys/class/gpio/gpio$RUN_PIN/direction
+# Check if BTLD_PIN is exported and set direction if necessary
+if [ ! -e /sys/class/gpio/gpio$BTLD_PIN ]; then
+    echo $BTLD_PIN > /sys/class/gpio/export
+    sleep 0.1
+    echo out > /sys/class/gpio/gpio$BTLD_PIN/direction
+elif [ "$(cat /sys/class/gpio/gpio$BTLD_PIN/direction)" != "out" ]; then
+    echo out > /sys/class/gpio/gpio$BTLD_PIN/direction
+fi
+
+# Check if RUN_PIN is exported and set direction if necessary
+if [ ! -e /sys/class/gpio/gpio$RUN_PIN ]; then
+    echo $RUN_PIN > /sys/class/gpio/export
+    sleep 0.1
+    echo out > /sys/class/gpio/gpio$RUN_PIN/direction
+elif [ "$(cat /sys/class/gpio/gpio$RUN_PIN/direction)" != "out" ]; then
+    echo out > /sys/class/gpio/gpio$RUN_PIN/direction
+fi
+
 sleep 0.1
 
 case "$OPERATION" in
@@ -96,10 +108,3 @@ case "$OPERATION" in
         echo "'$OPERATION' is not a valid operation. Please provide one of the following operations: load, run, flash, disable"
         ;;
 esac
-
-# Make pins High-Z and unexport
-echo in > /sys/class/gpio/gpio$BTLD_PIN/direction
-echo in > /sys/class/gpio/gpio$RUN_PIN/direction
-echo $BTLD_PIN > /sys/class/gpio/unexport
-echo $RUN_PIN > /sys/class/gpio/unexport
-
