@@ -3,7 +3,7 @@
 EXPECTED_ARGS=2
 E_BADARGS=65
 
-if [ $# -ne 2 ]
+if [ $# -lt 1 ] || [ $# -gt 2 ]; 
 then
   echo "Usage: $0 [load | run | flash | disable] <uf2_file>"
   exit $E_BADARGS
@@ -16,11 +16,11 @@ UF2_FILE=$2
 # on Jetson, pin 7 is gpio216 and pin 11 is gpio50
 # on RPi pin 7 is gpio4, pin 11 is gpio17
 if grep -q "Raspberry Pi" /proc/device-tree/model; then
-  echo "Detected Raspberry Pi, entering bootload mode..."
+  echo "Detected Raspberry Pi, entering $1 mode..."
   BTLD_PIN=4
   RUN_PIN=17
 elif grep -q "NVIDIA Jetson" /proc/device-tree/model; then
-  echo "Detected NVIDIA Jetson, entering bootload mode..."
+  echo "Detected NVIDIA Jetson, entering $1 mode..."
   BTLD_PIN=50
   RUN_PIN=216
 else
@@ -43,17 +43,21 @@ case "$OPERATION" in
         case "$OPERATION" in
             "load")
                 echo "Loading action for $UF2_FILE..."
-                echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
-                sleep 0.1
-                echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
-                sleep 0.5
-                echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
-                sleep 0.5
-                sudo picotool load $UF2_FILE
-                sleep 0.5
+                if [ -n "$UF2_FILE" ]; then
+                    echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
+                    sleep 0.1
+                    echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
+                    sleep 0.5
+                    echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
+                    sleep 0.5
+                    sudo picotool load $UF2_FILE
+                    sleep 0.5
+                else
+                    echo "Missing UF2 file for 'load' operation."
+                fi
                 ;;
             "run")
-                echo "Running action for $UF2_FILE..."
+                echo "Running action for loaded UF2_FILE..."
                 echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
                 sleep 0.1
                 echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
@@ -63,20 +67,24 @@ case "$OPERATION" in
                 ;;
             "flash")
                 echo "Flashing action for $UF2_FILE..."
-                echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
-                sleep 0.1
-                echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
-                sleep 0.5
-                echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
-                sleep 0.5
-                sudo picotool load $UF2_FILE
-                sleep 0.5
-                echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
-                sleep 0.5
-                sudo picotool reboot
+                if [ -n "$UF2_FILE" ]; then
+                    echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
+                    sleep 0.1
+                    echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
+                    sleep 0.5
+                    echo 1 > /sys/class/gpio/gpio$RUN_PIN/value
+                    sleep 0.5
+                    sudo picotool load $UF2_FILE
+                    sleep 0.5
+                    echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
+                    sleep 0.5
+                    sudo picotool reboot
+                else
+                    echo "Missing UF2 file for 'flash' operation."
+                fi
                 ;;
             "disable")
-                echo "Disable action for $UF2_FILE..."    
+                echo "Disable action..."    
                 echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
                 sleep 0.5
                 echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
@@ -86,7 +94,6 @@ case "$OPERATION" in
         ;;
     *)
         echo "'$OPERATION' is not a valid operation. Please provide one of the following operations: load, run, flash, disable"
-        exit 1
         ;;
 esac
 
