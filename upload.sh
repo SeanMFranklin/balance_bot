@@ -97,7 +97,7 @@ case "$OPERATION" in
                 ;;
             "disable")
                 echo "Disable action..."    
-                echo 0 > /sys/class/gpio/gpio$BTLD_PIN/value
+                echo 1 > /sys/class/gpio/gpio$BTLD_PIN/value
                 sleep 0.5
                 echo 0 > /sys/class/gpio/gpio$RUN_PIN/value
                 sleep 1
