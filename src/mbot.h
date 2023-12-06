@@ -62,12 +62,14 @@ serial_mbot_motor_pwm_t mbot_motor_pwm = {0};
 serial_mbot_motor_vel_t mbot_motor_vel = {0};
 
 // origin: comms
+serial_joy_t joy_cmd = {0};
 serial_twist2D_t mbot_vel_cmd = {0};
 serial_mbot_motor_pwm_t mbot_motor_pwm_cmd = {0};
 serial_mbot_motor_vel_t mbot_motor_vel_cmd = {0};
 serial_timestamp_t mbot_received_time = {0};
 
 //callback functions
+void joy_cmd_cb(serial_joy_t *msg);
 void timestamp_cb(serial_timestamp_t *msg);
 void reset_encoders_cb(serial_mbot_encoders_t *msg);
 void reset_odometry_cb(serial_pose2D_t *msg);
@@ -80,5 +82,46 @@ void mbot_calculate_motor_vel(serial_mbot_encoders_t encoders, serial_mbot_motor
 
 //helper functions
 float _calibrated_pwm_from_vel_cmd(float vel_cmd, int motor_idx);
+
+
+// Balance Bot
+static rc_filter_t filter_theta = RC_FILTER_INITIALIZER;
+static rc_filter_t filter_psi = RC_FILTER_INITIALIZER;
+static rc_filter_t filter_phi = RC_FILTER_INITIALIZER;
+
+// static bool running = false;
+static float P = 5.9;
+static float I = .1;
+static float D = .17;
+
+static double eP = 0.1;
+static double eI = 0;
+static double eD = 2.0;
+
+static float uP = .2;
+static float uI = 0;
+static float uD = .001;
+
+mbot_bhy_config_t mbot_imu_config;
+mbot_bhy_data_t mbot_imu_data;
+serial_joy_t joy_cmd;
+serial_twist2D_t gains;
+
+static int motor_0_polarity = -1;
+static int motor_2_polarity = 1;
+static float encoder_clicks_to_2rad = 1/1000;
+static float target_theta = .13;
+static float target_psi = 0;
+static float target_phi = 0;
+static float del_psi = 0;
+static float del_theta = 0;
+static float vel = 0;
+static float instruction = 0;
+static float sum_theta = 0;
+static int cycles = 0;
+static double d1, d2, d3, t1, t2, t3 = 0;
+static double balanced_theta = .11;
+static double limits = .05;
+static int loop_time_ms = 10;
 
 #endif

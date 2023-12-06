@@ -288,3 +288,23 @@ target_link_libraries(mbot_calibrate_omni
 pico_enable_stdio_usb(mbot_calibrate_omni 1)
 pico_enable_stdio_uart(mbot_calibrate_omni 0)
 pico_add_extra_outputs(mbot_calibrate_omni)
+
+#MbotBalanceBot
+add_executable(balance
+  balance.c
+)
+target_link_libraries(balance
+  pico_stdlib
+  pico_multicore
+  pico_time
+  hardware_pwm
+  hardware_sync
+  hardware_i2c
+  hardware_flash
+  mbotlib
+  rclib
+  comms
+)
+pico_enable_stdio_usb(balance 1)
+pico_enable_stdio_uart(balance 0)
+pico_add_extra_outputs(balance)
