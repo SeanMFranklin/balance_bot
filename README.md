@@ -11,7 +11,7 @@ Soldering Gun | 1
 
 Use the heated soldering gun to press the threaded inserts into the holes on the bottom of the motor mount.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/0e036c19-5d2e-4ac9-8dd7-926b1ce89eb4" alt="drawing" width="300"/>
+<img src="images/1.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -21,8 +21,8 @@ M2.5 x 6mm Nylock Screws | 2
 
 Gather all the components and assemble as shown in the images below.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/e8db83fb-b8a2-4a32-991c-30557f89069a" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/4ab1a29e-34bd-433a-94e7-2febfcafb8e8" alt="drawing" width="300"/>
+<img src="images/2.jpg" alt="drawing" width="300"/> 
+<img src="images/3.jpg" alt="drawing" width="300"/>
 
 
 
@@ -37,8 +37,8 @@ M2.5 x 8mm Screws | 4
 
 Gather all the components and assemble as shown in the images below.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/11ef09e6-f114-4399-826c-4b5450dee755" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/99270d82-ccd9-440b-8634-3e56868fe755" alt="drawing" width="300"/>
+<img src="images/4.jpg" alt="drawing" width="300"/> 
+<img src="images/5.jpg" alt="drawing" width="300"/>
 
 
 Components  | #
@@ -50,7 +50,7 @@ Set screws | 2
 Hex Key | 1
 Motor and Mount | 2
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/b698d262-e332-4be8-a8fc-c4eb5a439b98" alt="drawing" width="300"/> 
+<img src="images/6.jpg" alt="drawing" width="300"/> 
 
 Follow the steps below:
 
@@ -59,13 +59,13 @@ Follow the steps below:
 3. Insert the M3x20mm screws to secure the parts together, as demonstrated in the second image.
 4. Using the 2mm Hex wrench screw the set screws that come with the wheel adaptor kit into the wheel adaptors as shown in the 3rd and 4th image.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/cf051ddc-5d6b-4125-8f23-f54791699e87" alt="drawing" width="500"/> 
+<img src="images/7.jpg" alt="drawing" width="500"/> 
 
 5. Then you can directly put the wheel on, use the hex key to tight the wheels. Note that it is necessary to leave a bit of space between the wheel and the screw head of the motor, as depicted in the image below, otherwise the wheel hub will rub against the screws holding the motor causing excess friction or jamming the motors.
 
 6. Mount the Wheels to the Bottom plate
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/a9a81fa0-f126-461f-a445-26f151ef8276" alt="drawing" width="300"/> 
+<img src="images/8.jpg" alt="drawing" width="300"/> 
 
 Components  | #
 ------------- | -------------
@@ -77,8 +77,8 @@ M2.5 x 16mm Screws | 2
 
 Mount the raspberry Pi to the middle of the bottom plate.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/c5f5aba9-6c13-4cce-9ffd-bef738852905" alt="drawing" width="300"/>  
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/5ce50dba-668a-4e2c-901b-4dd4b1ecd08b" alt="drawing" width="300"/> 
+<img src="images/9.jpg" alt="drawing" width="300"/>  
+<img src="images/10.jpg" alt="drawing" width="300"/> 
 
 ## Middle Assembly
 
@@ -90,11 +90,11 @@ Jumper Cap (Shorting block)| 1
 
 Put the jumper cap on. Notice that in the 1st image, there are 3 pins squared together. Since we are using 12V, make sure to position the jumper cap over the VM and 12V pins, as demonstrated in the 2nd image.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/032a5aee-f756-452e-a677-a93d300ac51e" alt="drawing" width="300"/> <img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/8967219a-cdec-449c-85ed-59a379b3e5e7" alt="drawing" width="300"/>
+<img src="images/11.jpg" alt="drawing" width="300"/> <img src="images/1.jpg" alt="drawing" width="300"/>
 
 Push the PICO+ into its mounts on the Control Board.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/06842120-3884-4cdb-9a56-cd5c0c7e54b6" alt="drawing" width="300"/>
+<img src="images/12.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -104,8 +104,8 @@ M2.5 x 6mm Screws | 4
 
 Gather all the components and assemble as shown in the images below.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/e1357403-9a75-4aff-8c73-22168605422e" alt="drawing" width="300"/>
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/5fec5ab7-3e24-47e1-8896-e175141cf29a" alt="drawing" width="300"/>
+<img src="images/13.jpg" alt="drawing" width="300"/>
+<img src="images/14.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -115,8 +115,8 @@ Pico and Cape | 1
 
 Mount the Cape to the middle of the Middle Plate.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/9fa2e1c4-f916-4a33-b901-22a3868e0575" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/d043ec63-efcb-4df6-a9ce-d85591f12dfd" alt="drawing" width="300"/>
+<img src="images/15.jpg" alt="drawing" width="300"/> 
+<img src="images/16.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -126,8 +126,8 @@ M2.5 x 8mm Screws | 4
 
 Mount the aluminum standoffs on the side, one hole down from the corner.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/8bc9ed9a-c2fa-497a-ba34-546c5983eea3" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/5dc16648-cc53-45c9-bfde-f421611bd3ea" alt="drawing" width="300"/>
+<img src="images/17.jpg" alt="drawing" width="300"/> 
+<img src="images/18.jpg" alt="drawing" width="300"/>
 
 ## Top Plate Assembly
 
@@ -139,8 +139,8 @@ Battery Clips | 3
 
 Tie the Battery clips to the top plate. One side will have 2 stacked, the other just one.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/20d9112a-b9ec-4ec5-9b4c-1c5f12c32561" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/45df2b7f-e054-4e13-9e99-de9f336ef3a3" alt="drawing" width="300"/>
+<img src="images/19.jpg" alt="drawing" width="300"/> 
+<img src="images/20.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -150,8 +150,8 @@ Velcro | 1
 
 Gather all the components and assemble as shown in the images below.
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/0b57de7e-bc8a-44f4-a247-3369927afc71" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/c12703ec-1848-4e16-a64f-4c4bec73d237" alt="drawing" width="300"/>
+<img src="images/21.jpg" alt="drawing" width="300"/> 
+<img src="images/22.jpg" alt="drawing" width="300"/>
 
 ## Full Assembly
 Components  | #
@@ -163,9 +163,9 @@ Top Assembly | 1
 
 Now we mount the Bottom Assembly to the Middle Assembly, and the Middle Assembly to the Top Assembly. Note that **assembly direction matters.** The bottom assembly must be mounted to the middle assembly in such a way that the Motor cables can reach through the slot on the middle plate. The middle plate must be mounted to the top plate in such a way that the ports on the battery are on the same side as the ports of the cape. Also you might find it easier to attach the motor cables before you mount the top assembly. (See next step)
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/75f24e40-31c3-410d-81b1-102b7305607b" alt="drawing" width="300"/> 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/a5f24c6a-0810-4b51-9dc2-0dc99fc545ee" alt="drawing" width="300"/>
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/f4c5475a-5c70-448a-ab0c-d5577f9fe436" alt="drawing" width="300"/>
+<img src="images/23.jpg" alt="drawing" width="300"/> 
+<img src="images/24.jpg" alt="drawing" width="300"/>
+<img src="images/25.jpg" alt="drawing" width="300"/>
 
 Components  | #
 ------------- | -------------
@@ -181,7 +181,7 @@ Finally we connect all the cables and power:
 3. Use the USB-C Cable to connect the Robotics Control Board and Pi
    
 
-<img src="https://github.com/SeanMFranklin/balance_bot/assets/57806875/3db3199c-bc63-4939-8c7f-a312dd8ebe38" alt="drawing" width="300"/>
+<img src="images/26.jpg" alt="drawing" width="300"/>
 
 4. Connect the motor cables to the control board. Note that **you will short the cape if you do it backwards.** If you are using the rainbow cables it connects like below:
 
