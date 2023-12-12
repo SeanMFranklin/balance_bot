@@ -425,8 +425,8 @@ bool control_loop()
 
     // Set target position with joystick
     //TODO: Change to velocity setting
-    target_psi -= .03 * joy_cmd.left_analog_Y;
-    del_psi = t1 - target_psi;
+    target_vel = (loop_time_ms / 1000.0) * 2 * joy_cmd.left_analog_Y;
+    del_psi = d1 - target_vel;
     target_theta = balanced_theta - pid_update(&filter_psi, del_psi);
     // target_theta = balanced_theta - rc_filter_march(&filter_psi, del_psi);
     // target_theta = balanced_theta - (eP * del_psi + eI * 0 + eD * (d3 + last_d3) / 2);
@@ -446,7 +446,7 @@ bool control_loop()
         mbot_motor_set_duty(0, 0);
         mbot_motor_set_duty(2,0);
     }
-
+    // Reset Position
     if (joy_cmd.button_Y == 1) {
         sum_theta = 0;
         target_psi = t1;
@@ -487,7 +487,7 @@ int main()
 
 
     pid_init(&filter_theta, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
-    pid_init(&filter_psi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    pid_init(&filter_psi, eP, eI, eD, loop_time_ms / 50.0, loop_time_ms / 1000.0);
     pid_init(&filter_phi, uP, uI, uD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
 
     repeating_timer_t loop_timer;
@@ -502,8 +502,8 @@ int main()
         printf("\033[2J\r");
         printf("             Inner                  |               Outer\n");
         printf("P: %4.4f   I: %4.4f    D: %4.4f  |   P: %4.4f  I: %4.4f   D: %4.4f", filter_theta.Kd, filter_theta.Ki, filter_theta.Kd, filter_psi.Kd, filter_psi.Ki, filter_psi.Kd);
-        printf("\n\nTarget Psi: %4.4f", target_psi);
-        printf("\nCurrent Psi: %4.4f", t1);
+        printf("\n\nTarget Vel: %4.4f", target_vel);
+        printf("\nCurrent vel: %4.4f", d1);
         printf("\nTarget Theta: %4.4f", target_theta);
         printf("\nInstruction: %4.4f\n\n", instruction);
         mbot_imu_print(mbot_imu_data);
