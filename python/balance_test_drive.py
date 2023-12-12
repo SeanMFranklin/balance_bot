@@ -25,7 +25,7 @@ reference = {
 }
 
 try:
-    while pygame.joystick.get_count() == 1:
+    while True:
         for event in pygame.event.get():
             # print(event)
             lcm_message = joy_t()
@@ -37,6 +37,7 @@ try:
                 lcm_message.right_analog_Y = -joystick.get_axis(3)
                 # Send the data to LCM
                 lc.publish("MBOT_JOY", lcm_message.encode())
+                sleep(.1)
 
             elif event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 0:
@@ -48,6 +49,7 @@ try:
                 elif event.button == 3:
                     lcm_message.button_X = 1
                 lc.publish("MBOT_JOY", lcm_message.encode())
+                sleep(.1)
             
             elif event.type == pygame.JOYBUTTONUP:
                 if event.button == 0:
@@ -59,6 +61,7 @@ try:
                 elif event.button == 3:
                     lcm_message.button_X = 0
                 lc.publish("MBOT_JOY", lcm_message.encode())
+                sleep(.1)
 
             # Not available till Pygame 2.x is installed. In Pygame 1.9 there exist no event to detect controller disconnect.
 

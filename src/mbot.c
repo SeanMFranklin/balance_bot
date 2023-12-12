@@ -8,6 +8,7 @@
 #include <mbot/utils/utils.h>
 #include "print_tables.h"
 #include <mbot/defs/mbot_params.h>
+#include "pid_filter.h"
 
 #define THETA "\u0398"
 #pragma pack(1)
@@ -95,6 +96,7 @@ void reset_odometry_cb(serial_pose2D_t *msg)
     eP = msg->x;
     eI = msg->y;
     eD = msg->theta;
+    pid_set_gains(&filter_psi, msg->x, msg->y, msg->theta, loop_time_ms / 250.0);
     // rc_filter_pid(&filter_outer, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
     // rc_filter_reset(&filter_outer);
 }
@@ -105,6 +107,7 @@ void mbot_vel_cmd_cb(serial_twist2D_t *msg)
     P = msg->vx;
     I = msg->vy;
     D = msg->wz;
+    pid_set_gains(&filter_theta, msg->vx, msg->vy, msg->wz, loop_time_ms / 250.0);
     // rc_filter_pid(&filter_inner, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
     // rc_filter_reset(&filter_inner);
     drive_mode = MODE_MBOT_VEL;
@@ -403,83 +406,36 @@ bool mbot_loop(repeating_timer_t *rt)
     return true;
 }
 
-// int main()
-// {
-//     running = false;
-//     mbot_init_pico();
-//     mbot_init_hardware();
-//     mbot_init_comms();
-//     mbot_read_fram(0, sizeof(params), &params);
 
-//     // Check also that define drive type is same as FRAM drive type
-//     //  int validate_status = validate_FRAM_data(&params);
-//     //  if (validate_status < 0)
-//     //  {
-//     //  printf("Failed to validate FRAM Data! Error code: %d\n", validate_status);
-//     //     return -1;
-//     // }
-
-//     // if(params.robot_type != MBOT_DRIVE_TYPE){
-//     //     printf("#define type is not equal to calibration type!\n");
-//     //     return -1;
-//     // }
-
-//     sleep_ms(3000);
-//     print_mbot_params(&params);
-//     printf("Starting MBot Loop...\n");
-//     repeating_timer_t loop_timer;
-//     add_repeating_timer_ms(MAIN_LOOP_PERIOD * 1000, mbot_loop, NULL, &loop_timer); // 1000x to convert to ms
-//     printf("Done Booting Up!\n");
-//     running = true;
-//     uint16_t counter = 0;
-
-//     while (running)
-//     {
-//         // Heartbeat
-//         if (!(counter % 5))
-//         {
-//             gpio_put(LED_PIN, 1);
-//         }
-//         else if (!(counter % 7))
-//         {
-//             gpio_put(LED_PIN, 1);
-//             counter = 0;
-//         }
-//         else
-//         {
-//             gpio_put(LED_PIN, 0);
-//         }
-//         // Print State
-//         mbot_print_state(mbot_imu, mbot_encoders, mbot_odometry, mbot_motor_vel);
-//         sleep_ms(200);
-//         counter++;
-//     }
-// }
-
-void read_encoders(double *d1,double *d2,double *d3,double *t1,double *t2,double *t3)
+void read_encoders()
 {
-    *d1 = encoder_clicks_to_2rad * mbot_encoder_read_delta(0);
-    *d2 = encoder_clicks_to_2rad * mbot_encoder_read_delta(1);
-    *d3 = encoder_clicks_to_2rad * mbot_encoder_read_delta(2);
-    *t1 = encoder_clicks_to_2rad * mbot_encoder_read_count(0);
-    *t2 = encoder_clicks_to_2rad * mbot_encoder_read_count(1);
-    *t3 = encoder_clicks_to_2rad * mbot_encoder_read_count(2);
+    d1 = encoder_clicks_to_2rad * mbot_encoder_read_delta(0) * motor_0_polarity;
+    d2 = encoder_clicks_to_2rad * mbot_encoder_read_delta(1);
+    d3 = encoder_clicks_to_2rad * mbot_encoder_read_delta(2) * motor_2_polarity;
+    t1 = encoder_clicks_to_2rad * mbot_encoder_read_count(0) * motor_0_polarity;
+    t2 = encoder_clicks_to_2rad * mbot_encoder_read_count(1);
+    t3 = encoder_clicks_to_2rad * mbot_encoder_read_count(2) * motor_2_polarity;
 }
 
 
 bool control_loop()
 {
-    // serial_twist2D_t test_message;
+    //Update encoder readings
+    read_encoders();
 
-    read_encoders(&d1, &d2, &d3, &t1, &t2, &t3);
+    // Set target position with joystick
+    //TODO: Change to velocity setting
     target_psi -= .03 * joy_cmd.left_analog_Y;
     del_psi = t1 - target_psi;
+    target_theta = balanced_theta - pid_update(&filter_psi, del_psi);
     // target_theta = balanced_theta - rc_filter_march(&filter_psi, del_psi);
-    target_theta = balanced_theta - (eP * del_psi + eI * 0 + eD * d1);
+    // target_theta = balanced_theta - (eP * del_psi + eI * 0 + eD * (d3 + last_d3) / 2);
+    // last_d3 = d3;
     del_theta = mbot_imu_data.rpy[1] - target_theta;
     vel = mbot_imu_data.gyro[1];
     sum_theta += del_theta;
-    instruction = P * del_theta + I * sum_theta + D * vel;
+    instruction = pid_update(&filter_theta, del_theta);
+    // instruction = P * del_theta + I * sum_theta + D * vel;
     // instruction = rc_filter_march(&filter_theta, del_theta);
     
     if (running == 1) {
@@ -524,10 +480,15 @@ int main()
     sleep_ms(3000);
     printf("\033[2J\r");
 
-    rc_filter_pid(&filter_theta, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
-    rc_filter_pid(&filter_psi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
-    rc_filter_enable_saturation(&filter_psi, balanced_theta - limits, balanced_theta + limits);
-    rc_filter_pid(&filter_phi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    // rc_filter_pid(&filter_theta, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    // rc_filter_pid(&filter_psi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    // rc_filter_enable_saturation(&filter_psi, balanced_theta - limits, balanced_theta + limits);
+    // rc_filter_pid(&filter_phi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+
+
+    pid_init(&filter_theta, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    pid_init(&filter_psi, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
+    pid_init(&filter_phi, uP, uI, uD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
 
     repeating_timer_t loop_timer;
     add_repeating_timer_ms(loop_time_ms, control_loop, NULL, &loop_timer);
@@ -540,15 +501,12 @@ int main()
         // Print State
         printf("\033[2J\r");
         printf("             Inner                  |               Outer\n");
-        printf("P: %4.4f   I: %4.4f    D: %4.4f  |   P: %4.4f  I: %4.4f   D: %4.4f", P, I, D, eP, eI, eD);
+        printf("P: %4.4f   I: %4.4f    D: %4.4f  |   P: %4.4f  I: %4.4f   D: %4.4f", filter_theta.Kd, filter_theta.Ki, filter_theta.Kd, filter_psi.Kd, filter_psi.Ki, filter_psi.Kd);
         printf("\n\nTarget Psi: %4.4f", target_psi);
         printf("\nCurrent Psi: %4.4f", t1);
         printf("\nTarget Theta: %4.4f", target_theta);
         printf("\nInstruction: %4.4f\n\n", instruction);
         mbot_imu_print(mbot_imu_data);
-        // rc_filter_pid(&filter_inner, P, I, D, loop_time_ms / 250.0, loop_time_ms / 1000.0);
-        // rc_filter_pid(&filter_outer, eP, eI, eD, loop_time_ms / 250.0, loop_time_ms / 1000.0);
-        // rc_filter_enable_saturation(&filter_outer, balanced_theta - limits, balanced_theta + limits);
         sleep_ms(300); 
     }
     return 0;

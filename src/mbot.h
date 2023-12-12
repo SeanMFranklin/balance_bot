@@ -21,6 +21,7 @@
 #include <comms/topic_data.h>
 #include <comms/mbot_channels.h>
 #include <mbot_lcm_msgs_serial.h>
+#include "pid_filter.h"
 
 #include <math.h>
 #include <inttypes.h>
@@ -85,22 +86,38 @@ float _calibrated_pwm_from_vel_cmd(float vel_cmd, int motor_idx);
 
 
 // Balance Bot
-static rc_filter_t filter_theta = RC_FILTER_INITIALIZER;
-static rc_filter_t filter_psi = RC_FILTER_INITIALIZER;
-static rc_filter_t filter_phi = RC_FILTER_INITIALIZER;
+// static rc_filter_t filter_theta = RC_FILTER_INITIALIZER;
+// static rc_filter_t filter_psi = RC_FILTER_INITIALIZER;
+// static rc_filter_t filter_phi = RC_FILTER_INITIALIZER;
+
+static PID_t filter_theta; // Body Angle
+static PID_t filter_psi; // Wheel Position
+static PID_t filter_phi; // Yaw
+static PID_t filter_vel; // Velocity
 
 // static bool running = false;
-static float P = 5.9;
-static float I = .1;
-static float D = .17;
+// static float P = 4;
+// static float I = .2;
+// static float D = .1;
 
-static double eP = 0.1;
+// static double eP = .1;
+// static double eI = 0;
+// static double eD = .04;
+static float P = 4.0;
+static float I = .1;
+static float D = .1;
+
+static double eP = .1;
 static double eI = 0;
-static double eD = 2.0;
+static double eD = 2.5;
 
 static float uP = .2;
 static float uI = 0;
 static float uD = .001;
+
+static float vP = .2;
+static float vI = 0;
+static float vD = .001;
 
 mbot_bhy_config_t mbot_imu_config;
 mbot_bhy_data_t mbot_imu_data;
@@ -109,9 +126,11 @@ serial_twist2D_t gains;
 
 static int motor_0_polarity = -1;
 static int motor_2_polarity = 1;
-static float encoder_clicks_to_2rad = 1/1000;
+static float encoder_clicks_to_2rad = .001;
 static float target_theta = .13;
-static float target_psi = 0;
+static float last_d3 = 0;
+static float target_psi = 0.0;
+static float target_vel = 0.0;
 static float target_phi = 0;
 static float del_psi = 0;
 static float del_theta = 0;
@@ -120,8 +139,8 @@ static float instruction = 0;
 static float sum_theta = 0;
 static int cycles = 0;
 static double d1, d2, d3, t1, t2, t3 = 0;
-static double balanced_theta = .11;
-static double limits = .05;
+static double balanced_theta = .08;
+static double limits = .30;
 static int loop_time_ms = 10;
 
 #endif
