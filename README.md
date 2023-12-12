@@ -1,4 +1,6 @@
 
+<img src="images/Full Assembly v10.gif" alt="drawing" width="500"/>
+
 # Assembly
 
 ## Bottom Assembly
