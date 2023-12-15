@@ -7,12 +7,12 @@
 
 Symbol  | Meaning | Source
 ------------- | ------------- | -------------
-$\Psi_{sp}$ | Odometry Set Point | Input by User (Controller)
+$\Psi_{sp}$ | Odometry Set Point | User Input (Controller)
 $\Psi_{0}$  | Current Odometry Reading | Encoder Reading
 $\Theta_{b}$ | Balanced Pitch | Measured
 $\Theta_{sp}$ | Target Pitch (from balanced) | Calculated
 $\Theta_{0}$ | Current Pitch | IMU Reading
-$\Phi_{c}$ | Yaw Adjustment | User Input
+$\Phi_{c}$ | Yaw Adjustment | User Input (Controller)
 
 # Assembly
 
