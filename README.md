@@ -1,6 +1,10 @@
 
 <img src="images/Full Assembly v10.gif" alt="drawing" width="500"/>
 
+# Design
+
+<img src="images/PID Diagram.drawio" alt="drawing" width="1000"/>
+
 # Assembly
 
 ## Bottom Assembly
