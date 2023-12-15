@@ -1,9 +1,9 @@
-
+![PID Diagram drawio](https://github.com/SeanMFranklin/balance_bot/assets/57806875/35644fff-4eeb-4731-a9ed-390d37497ca0)
 <img src="images/Full Assembly v10.gif" alt="drawing" width="500"/>
 
 # Design
 
-<img src="images/PID Diagram.drawio.svg" alt="drawing" width="1000"/>
+<img src="images/PID Diagram.drawio.svg" alt="drawing" width="800"/>
 
 # Assembly
 
