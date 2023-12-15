@@ -3,7 +3,7 @@
 
 # Design
 
-<img src="images/PID Diagram.drawio.svg" alt="drawing" width="1000"/>
+<img src="images/Control Diagram.svg" alt="drawing" width="1000"/>
 
 # Assembly
 
