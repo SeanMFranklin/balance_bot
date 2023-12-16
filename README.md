@@ -237,3 +237,7 @@ python ./python/Controller_Tuner.py
 | * | *= 1.1 gain |
 | / | /= 1.1 gain |
 | 0 | = 0 gain|
+
+# TODO:
+- Figure out why the controller sends lcm messages in spurts.
+- Squeeze a velocity controller in between the Wheel Position Controller and the Pitch Controller.
