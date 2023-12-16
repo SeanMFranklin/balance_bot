@@ -103,13 +103,16 @@ static PID_t filter_vel; // Velocity
 // static double eP = .1;
 // static double eI = 0;
 // static double eD = .04;
-static float P = 4.0;
-static float I = .1;
-static float D = .1;
+static float P = 5.3;
+static float I = .3;
+static float D = .121;
 
-static double eP = .1;
+// static double eP = .1;
+// static double eI = 0;
+// static double eD = 2.5;
+static double eP = .3;
 static double eI = 0;
-static double eD = 2.5;
+static double eD = 3.2;
 
 static float uP = .2;
 static float uI = 0;

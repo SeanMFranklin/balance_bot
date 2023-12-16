@@ -1,6 +1,19 @@
 
 <img src="images/Full Assembly v10.gif" alt="drawing" width="500"/>
 
+# Design
+
+<img src="images/Control Diagram.svg" alt="drawing" width="1000"/>
+
+Symbol  | Meaning | Source
+------------- | ------------- | -------------
+$\Psi_{sp}$ | Odometry Set Point | User Input (Controller)
+$\Psi_{0}$  | Current Odometry Reading | Encoder Reading
+$\Theta_{b}$ | Balanced Pitch | Measured
+$\Theta_{sp}$ | Target Pitch (from balanced) | Calculated
+$\Theta_{0}$ | Current Pitch | IMU Reading
+$\Phi_{c}$ | Yaw Adjustment | User Input (Controller)
+
 # Assembly
 
 ## Bottom Assembly
@@ -223,3 +236,4 @@ python ./python/Controller_Tuner.py
 | - | -= .1 gain |
 | * | *= 1.1 gain |
 | / | /= 1.1 gain |
+| 0 | = 0 gain|
